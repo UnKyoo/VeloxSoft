@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             NavPanel = new Panel();
+            pbViewPassword = new PictureBox();
+            TxtUsuario = new TextBox();
             LabelError = new Label();
             LabelLimpiar = new Label();
             TxtPassword = new TextBox();
@@ -37,12 +39,12 @@
             PasswordIcon = new PictureBox();
             panel2 = new Panel();
             panel1 = new Panel();
-            TxtUsuario = new TextBox();
             UserIcon = new PictureBox();
             TxtLogIn = new Label();
             pictureBox1 = new PictureBox();
             LabelSalir = new Label();
             NavPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pbViewPassword).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PasswordIcon).BeginInit();
             ((System.ComponentModel.ISupportInitialize)UserIcon).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -50,6 +52,7 @@
             // 
             // NavPanel
             // 
+            NavPanel.Controls.Add(pbViewPassword);
             NavPanel.Controls.Add(TxtUsuario);
             NavPanel.Controls.Add(LabelError);
             NavPanel.Controls.Add(LabelLimpiar);
@@ -70,13 +73,41 @@
             NavPanel.Paint += NavPanel_Paint;
             NavPanel.MouseDown += NavPanel_MouseDown;
             // 
+            // pbViewPassword
+            // 
+            pbViewPassword.Image = Properties.Resources.Not_view;
+            pbViewPassword.Location = new Point(224, 267);
+            pbViewPassword.Name = "pbViewPassword";
+            pbViewPassword.Size = new Size(32, 31);
+            pbViewPassword.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbViewPassword.TabIndex = 74;
+            pbViewPassword.TabStop = false;
+            pbViewPassword.Click += pictureBox2_Click;
+            // 
+            // TxtUsuario
+            // 
+            TxtUsuario.BackColor = Color.FromArgb(10, 34, 17);
+            TxtUsuario.BorderStyle = BorderStyle.None;
+            TxtUsuario.Font = new Font("Century Gothic", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            TxtUsuario.ForeColor = Color.White;
+            TxtUsuario.Location = new Point(51, 201);
+            TxtUsuario.Margin = new Padding(3, 2, 3, 2);
+            TxtUsuario.MaxLength = 10;
+            TxtUsuario.Multiline = true;
+            TxtUsuario.Name = "TxtUsuario";
+            TxtUsuario.Size = new Size(205, 24);
+            TxtUsuario.TabIndex = 69;
+            TxtUsuario.TextChanged += TxtUsuario_TextChanged;
+            TxtUsuario.KeyPress += TxtUsuario_KeyPress;
+            // 
             // LabelError
             // 
             LabelError.Dock = DockStyle.Bottom;
+            LabelError.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             LabelError.ForeColor = Color.Red;
-            LabelError.Location = new Point(0, 429);
+            LabelError.Location = new Point(0, 415);
             LabelError.Name = "LabelError";
-            LabelError.Size = new Size(292, 17);
+            LabelError.Size = new Size(292, 31);
             LabelError.TabIndex = 73;
             LabelError.Text = "nada";
             LabelError.TextAlign = ContentAlignment.TopCenter;
@@ -110,6 +141,7 @@
             TxtPassword.Size = new Size(205, 24);
             TxtPassword.TabIndex = 70;
             TxtPassword.TextChanged += TxtPassword_TextChanged;
+            TxtPassword.KeyDown += TxtPassword_KeyDown;
             // 
             // LogInButton
             // 
@@ -160,22 +192,6 @@
             panel1.Size = new Size(236, 1);
             panel1.TabIndex = 64;
             // 
-            // TxtUsuario
-            // 
-            TxtUsuario.BackColor = Color.FromArgb(10, 34, 17);
-            TxtUsuario.BorderStyle = BorderStyle.None;
-            TxtUsuario.Font = new Font("Century Gothic", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            TxtUsuario.ForeColor = Color.White;
-            TxtUsuario.Location = new Point(51, 201);
-            TxtUsuario.Margin = new Padding(3, 2, 3, 2);
-            TxtUsuario.MaxLength = 10;
-            TxtUsuario.Multiline = true;
-            TxtUsuario.Name = "TxtUsuario";
-            TxtUsuario.Size = new Size(205, 24);
-            TxtUsuario.TabIndex = 69;
-            TxtUsuario.TextChanged += TxtUsuario_TextChanged;
-            TxtUsuario.KeyPress += TxtUsuario_KeyPress;
-            // 
             // UserIcon
             // 
             UserIcon.Image = Properties.Resources.UserVeloxen;
@@ -189,11 +205,11 @@
             // TxtLogIn
             // 
             TxtLogIn.AutoSize = true;
-            TxtLogIn.Font = new Font("Bauhaus 93", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            TxtLogIn.Font = new Font("Franklin Gothic Medium Cond", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
             TxtLogIn.ForeColor = Color.White;
-            TxtLogIn.Location = new Point(20, 123);
+            TxtLogIn.Location = new Point(48, 123);
             TxtLogIn.Name = "TxtLogIn";
-            TxtLogIn.Size = new Size(252, 36);
+            TxtLogIn.Size = new Size(200, 37);
             TxtLogIn.TabIndex = 62;
             TxtLogIn.Text = "Inicio de sesión";
             // 
@@ -233,6 +249,7 @@
             Text = "Form1";
             NavPanel.ResumeLayout(false);
             NavPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pbViewPassword).EndInit();
             ((System.ComponentModel.ISupportInitialize)PasswordIcon).EndInit();
             ((System.ComponentModel.ISupportInitialize)UserIcon).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
@@ -254,5 +271,6 @@
         private PictureBox pictureBox1;
         private Label LabelSalir;
         private Label LabelError;
+        private PictureBox pbViewPassword;
     }
 }

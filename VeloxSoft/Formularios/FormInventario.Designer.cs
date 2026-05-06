@@ -428,6 +428,7 @@
             dtgBDInv.Size = new Size(927, 534);
             dtgBDInv.TabIndex = 18;
             dtgBDInv.CellContentClick += dataGridView2_CellContentClick;
+            dtgBDInv.DoubleClick += dtgBDInv_DoubleClick;
             // 
             // colID
             // 
