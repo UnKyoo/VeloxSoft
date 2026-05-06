@@ -12,6 +12,7 @@ namespace VeloxSoft.Formularios
 {
     public partial class FormInventario : Form
     {
+        private bool _modoEdicion = false; // Variable para controlar si estamos editando o creando un nuevo producto
         private readonly ServicioInventario _ServicioInventario;
         public FormInventario(ServicioInventario ServicioInventario)
         {
@@ -173,40 +174,42 @@ namespace VeloxSoft.Formularios
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
-            // 1. Validar que los campos no estén vacíos
-            if (string.IsNullOrWhiteSpace(textID.Text) ||
-                string.IsNullOrWhiteSpace(lblNombre.Text) ||
-                string.IsNullOrWhiteSpace(textPV.Text) ||
-                string.IsNullOrWhiteSpace(textStock.Text))
+            if (!_modoEdicion)
             {
-                LabelError2.Text = "Todos los campos son obligatorios.";
-                LabelError2.Visible = true;
-                LabelError2.ForeColor = Color.Red;
-                return;
-            }
+                // 1. Validar que los campos no estén vacíos
+                if (string.IsNullOrWhiteSpace(textID.Text) ||
+                    string.IsNullOrWhiteSpace(textNombre.Text) ||
+                    string.IsNullOrWhiteSpace(textPV.Text) ||
+                    string.IsNullOrWhiteSpace(textStock.Text))
+                {
+                    LabelError2.Text = "Todos los campos son obligatorios.";
+                    LabelError2.Visible = true;
+                    LabelError2.ForeColor = Color.Red;
+                    return;
+                }
 
-            // 2. Validar que precio y cantidad sean números
-            if (!decimal.TryParse(textPV.Text, out decimal precio))
-            {
-                LabelError2.Text = "El precio debe ser un número válido.";
-                LabelError2.ForeColor = Color.Red;
-                return;
-            }
-            if (!decimal.TryParse(textStock.Text, out decimal cantidad))
-            {
-                LabelError2.Text = "El stock debe ser un número válido.";
-                LabelError2.ForeColor = Color.Red;
-                return;
-            }
+                // 2. Validar que precio y cantidad sean números
+                if (!decimal.TryParse(textPV.Text, out decimal precio))
+                {
+                    LabelError2.Text = "El precio debe ser un número válido.";
+                    LabelError2.ForeColor = Color.Red;
+                    return;
+                }
+                if (!decimal.TryParse(textStock.Text, out decimal cantidad))
+                {
+                    LabelError2.Text = "El stock debe ser un número válido.";
+                    LabelError2.ForeColor = Color.Red;
+                    return;
+                }
 
-            // 3. Obtener categoría del ComboBox
-            if (BoxPrueba.SelectedItem == null)
-            {
-                LabelError2.Text = "Debe seleccionar una categoría.";
-                LabelError2.ForeColor = Color.Red;
-                LabelError2.Visible = true;
-                return;
-            }
+                // 3. Obtener categoría del ComboBox
+                if (BoxPrueba.SelectedItem == null)
+                {
+                    LabelError2.Text = "Debe seleccionar una categoría.";
+                    LabelError2.ForeColor = Color.Red;
+                    LabelError2.Visible = true;
+                    return;
+                }
 
             string categoria = BoxPrueba.SelectedItem.ToString();
 
@@ -222,37 +225,60 @@ namespace VeloxSoft.Formularios
             // DEBUG - borrar después
             MessageBox.Show($"ID: {textID.Text.Trim()}\nNombre: {lblNombre.Text.Trim()}\nCantidad: {cantidad}\nPrecio: {precio}\nCategoria: {categoria}");
 
-            // 4. Llamar al servicio para insertar el producto
-            string mensaje = _ServicioInventario.Insertar_Producto(textID.Text.Trim(), lblNombre.Text.Trim(), cantidad, precio, categoria, out string errorMessage);
+                // 4. Llamar al servicio para insertar el producto
+                string mensaje = _ServicioInventario.Insertar_Producto(textID.Text.Trim(), textNombre.Text.Trim(), cantidad, precio, categoria, out string errorMessage);
 
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                LabelError2.Text = errorMessage;
-                LabelError2.Visible = true;
-                LabelError2.ForeColor = Color.Red;
-                CargarInventario();
-                return;
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    LabelError2.Text = errorMessage;
+                    LabelError2.Visible = true;
+                    LabelError2.ForeColor = Color.Red;
+                    CargarInventario();
+                    return;
+                }
+                else
+                {
+
+                    LabelError2.Text = mensaje; // "Producto agregado correctamente."
+                    LabelError2.Visible = true;
+                    LabelError2.ForeColor = Color.Green;
+                    CargarInventario(); // Recarga la tabla para mostrar el nuevo producto
+
+                    //Limpiamos los campos después de guardar
+                    textID.Text = string.Empty;
+                    textNombre.Text = string.Empty;
+                    textPV.Text = string.Empty;
+                    textStock.Text = string.Empty;
+                    BoxPrueba.SelectedItem = null;
+                }
             }
-            else
-            {
-
-                LabelError2.Text = mensaje; // "Producto agregado correctamente."
-                LabelError2.Visible = true;
-                LabelError2.ForeColor = Color.Green;
-                CargarInventario(); // Recarga la tabla para mostrar el nuevo producto
-
-                //Limpiamos los campos después de guardar
-                textID.Text = string.Empty;
-                lblNombre.Text = string.Empty;
-                textPV.Text = string.Empty;
-                textStock.Text = string.Empty;
-                BoxPrueba.SelectedItem = null;
+            else 
+            { 
+               
             }
         }
 
         private void btnNuevo_Click(object sender, EventArgs e)
         {
+            //Limpiamos los campos para permitir ingresar un nuevo producto
+            textID.Text = string.Empty;
+            textNombre.Text = string.Empty;
+            textPV.Text = string.Empty;
+            textStock.Text = string.Empty;
+            BoxPrueba.Text = "";
 
+            //desbloquear el campo de ID en caso de que estemos editando un producto
+            textID.ReadOnly = false;
+            textID.Enabled = true;
+            textNombre.ReadOnly = false;
+            textNombre.Enabled = true;
+
+            //Desactivamos el modo edición para que al guardar se cree un nuevo producto en lugar de actualizar uno existente
+            _modoEdicion = false;
+
+            // Limpieza de mensaje de error
+            LabelError2.Text = string.Empty;
+            LabelError2.Visible = false;
         }
 
         private void btnNuevo_Paint(object sender, PaintEventArgs e)
@@ -600,6 +626,26 @@ namespace VeloxSoft.Formularios
         private void BuscarBD_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void dtgBDInv_DoubleClick(object sender, EventArgs e)
+        {
+            if (dtgBDInv.CurrentRow == null) return; // Si no hay una fila seleccionada, salimos del método
+            DataGridViewRow fila = dtgBDInv.CurrentRow; // Obtenemos la fila seleccionada
+
+            textID.Text = fila.Cells[0].Value.ToString();
+            textNombre.Text = fila.Cells[1].Value.ToString();
+            BoxPrueba.Text = fila.Cells[2].Value.ToString();
+            textStock.Text = fila.Cells[3].Value.ToString();
+            textPV.Text = fila.Cells[4].Value.ToString();
+
+            //Bloquearemos el campo de ID y nombre
+            textID.ReadOnly = true;
+            textID.Enabled = false;
+            textNombre.ReadOnly = true;
+            textNombre.Enabled = false;
+
+            _modoEdicion = true; //activamos el modo edición para que al guardar se actualice el producto en lugar de crear uno nuevo
         }
     }
 }

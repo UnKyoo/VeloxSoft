@@ -15,12 +15,16 @@ namespace VeloxSoft.Formularios
     public partial class FormLogIn : Form
     {
         private readonly AutenticarUsuario _autenticarUsuario;
-
+        private bool _MostrarContrasenia = false;
         public FormLogIn(AutenticarUsuario autenticarUsuario)
         {
             InitializeComponent();
             LabelSalir.BringToFront();
             _autenticarUsuario = autenticarUsuario;
+            // Contraseña oculta al iniciar
+            TxtPassword.UseSystemPasswordChar = false;
+            // Icono inicial
+            pbViewPassword.Image = Properties.Resources.Not_view;
         }
 
         private void NavPanel_MouseDown(object sender, MouseEventArgs e)
@@ -107,6 +111,30 @@ namespace VeloxSoft.Formularios
         private void TxtPassword_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void TxtPassword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                LogInButton.PerformClick();
+            }
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            _MostrarContrasenia = !_MostrarContrasenia;
+
+            if (_MostrarContrasenia)
+            {
+                TxtPassword.UseSystemPasswordChar = false;
+                pbViewPassword.Image = Properties.Resources.Not_view;
+            }
+            else
+            {
+                TxtPassword.UseSystemPasswordChar = true;
+                pbViewPassword.Image = Properties.Resources.View;
+            }
         }
     }
 }

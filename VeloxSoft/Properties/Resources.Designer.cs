@@ -93,6 +93,16 @@ namespace VeloxSoft.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Not_view {
+            get {
+                object obj = ResourceManager.GetObject("Not-view", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap PasswordVeloxen {
             get {
                 object obj = ResourceManager.GetObject("PasswordVeloxen", resourceCulture);
@@ -106,6 +116,16 @@ namespace VeloxSoft.Properties {
         internal static System.Drawing.Bitmap UserVeloxen {
             get {
                 object obj = ResourceManager.GetObject("UserVeloxen", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap View {
+            get {
+                object obj = ResourceManager.GetObject("View", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
