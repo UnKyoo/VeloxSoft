@@ -21,7 +21,7 @@ namespace VeloxSoft.Formularios
             this.ResizeRedraw = true;
             // Evita el efecto de "congelado" o parpadeo
             this.DoubleBuffered = true;
-
+            pnlBD_Resize(this, EventArgs.Empty);
 
         }
 
@@ -93,10 +93,7 @@ namespace VeloxSoft.Formularios
 
         }
 
-        private void btnBuscar_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnBuscar, e, 15);
-        }
+
 
         private void pnlNombre_Paint(object sender, PaintEventArgs e)
         {
@@ -178,7 +175,7 @@ namespace VeloxSoft.Formularios
         {
             // 1. Validar que los campos no estén vacíos
             if (string.IsNullOrWhiteSpace(textID.Text) ||
-                string.IsNullOrWhiteSpace(textNombre.Text) ||
+                string.IsNullOrWhiteSpace(lblNombre.Text) ||
                 string.IsNullOrWhiteSpace(textPV.Text) ||
                 string.IsNullOrWhiteSpace(textStock.Text))
             {
@@ -212,11 +209,21 @@ namespace VeloxSoft.Formularios
             }
 
             string categoria = BoxPrueba.SelectedItem.ToString();
+
+            if (categoria == "Pieza")
+            {
+                categoria = "PZ";
+            }
+            else if (categoria == "Kilo")
+            {
+                categoria = "KG";
+            }
+
             // DEBUG - borrar después
-            MessageBox.Show($"ID: {textID.Text.Trim()}\nNombre: {textNombre.Text.Trim()}\nCantidad: {cantidad}\nPrecio: {precio}\nCategoria: {categoria}");
+            MessageBox.Show($"ID: {textID.Text.Trim()}\nNombre: {lblNombre.Text.Trim()}\nCantidad: {cantidad}\nPrecio: {precio}\nCategoria: {categoria}");
 
             // 4. Llamar al servicio para insertar el producto
-            string mensaje = _ServicioInventario.Insertar_Producto(textID.Text.Trim(), textNombre.Text.Trim(), cantidad, precio, categoria, out string errorMessage);
+            string mensaje = _ServicioInventario.Insertar_Producto(textID.Text.Trim(), lblNombre.Text.Trim(), cantidad, precio, categoria, out string errorMessage);
 
             if (!string.IsNullOrEmpty(errorMessage))
             {
@@ -236,7 +243,7 @@ namespace VeloxSoft.Formularios
 
                 //Limpiamos los campos después de guardar
                 textID.Text = string.Empty;
-                textNombre.Text = string.Empty;
+                lblNombre.Text = string.Empty;
                 textPV.Text = string.Empty;
                 textStock.Text = string.Empty;
                 BoxPrueba.SelectedItem = null;
@@ -263,64 +270,175 @@ namespace VeloxSoft.Formularios
             RedondearBoton(btnEliminar, e, 15);
         }
 
+        private void pnlBD_Resize(object sender, EventArgs e)
+        {
+            int w = pnlBD.Width;
+            int h = pnlBD.Height;
+            int margen = 15;
+            int altoControl = 32;
+
+            // Umbral — si el panel es mayor a 600px todo en una línea
+            bool unaLinea = w >= 600;
+
+            if (unaLinea)
+            {
+                // ── PANTALLA GRANDE — todo en una sola fila ──
+                int y = 15;
+                int x = margen;
+
+                int anchoLbl = (int)(w * 0.10);
+                int anchoBuscar = (int)(w * 0.20);
+                int anchoBtn = (int)(w * 0.06);
+                int anchoCmb = (int)(w * 0.14);
+
+                // BUSCAR ID
+                BuscarBD.Location = new Point(x, y + 5);
+                BuscarBD.Size = new Size(anchoLbl, 22);
+                x += anchoLbl + 4;
+
+                pnlBuscarBD.Location = new Point(x, y);
+                pnlBuscarBD.Size = new Size(anchoBuscar, altoControl);
+                tbBuscarBD.Location = new Point(4, 7);
+                tbBuscarBD.Size = new Size(anchoBuscar - 8, 18);
+                x += anchoBuscar + 4;
+
+                btnGuardarBD.Location = new Point(x, y);
+                btnGuardarBD.Size = new Size(anchoBtn, altoControl);
+                x += anchoBtn + 10;
+
+                // CATEGORÍA
+                lbCategoria.Location = new Point(x, y + 5);
+                lbCategoria.Size = new Size(anchoLbl, 22);
+                x += anchoLbl + 4;
+
+                cbCategoria.Location = new Point(x, y);
+                cbCategoria.Size = new Size(anchoCmb, altoControl);
+                x += anchoCmb + 10;
+
+                // ESTADO
+                lbEstado.Location = new Point(x, y + 5);
+                lbEstado.Size = new Size(anchoLbl, 22);
+                x += anchoLbl + 4;
+
+                cbEstado.Location = new Point(x, y);
+                cbEstado.Size = new Size(anchoCmb, altoControl);
+
+                y += altoControl + 8;
+
+                LabelError.Location = new Point(margen, y);
+                LabelError.Size = new Size(w - margen * 2, 18);
+                y += 22;
+
+                dtgBDInv.Location = new Point(margen, y);
+                dtgBDInv.Size = new Size(w - margen * 2, h - y - 8);
+            }
+            else
+            {
+                // ── PANTALLA PEQUEÑA — buscar arriba, combos abajo ──
+                int anchoBuscar = w - margen * 2 - 50;
+                int anchoCmb = (int)((w - margen * 2 - 10) / 2);
+
+                // FILA 1 — BUSCAR ID
+                int y1 = 10;
+                BuscarBD.Location = new Point(margen, y1 + 5);
+                BuscarBD.Size = new Size(80, 22);
+
+                pnlBuscarBD.Location = new Point(margen + 84, y1);
+                pnlBuscarBD.Size = new Size(anchoBuscar - 84, altoControl);
+                tbBuscarBD.Location = new Point(4, 7);
+                tbBuscarBD.Size = new Size(pnlBuscarBD.Width - 8, 18);
+
+                btnGuardarBD.Location = new Point(w - margen - 46, y1);
+                btnGuardarBD.Size = new Size(42, altoControl);
+
+                // FILA 2 — COMBOS
+                int y2 = y1 + altoControl + 8;
+
+                lbCategoria.Location = new Point(margen, y2 + 5);
+                lbCategoria.Size = new Size(75, 22);
+
+                cbCategoria.Location = new Point(margen + 78, y2);
+                cbCategoria.Size = new Size(anchoCmb - 78, altoControl);
+
+                lbEstado.Location = new Point(margen + anchoCmb + 10, y2 + 5);
+                lbEstado.Size = new Size(55, 22);
+
+                cbEstado.Location = new Point(margen + anchoCmb + 68, y2);
+                cbEstado.Size = new Size(anchoCmb - 68, altoControl);
+
+                int y3 = y2 + altoControl + 6;
+
+                LabelError.Location = new Point(margen, y3);
+                LabelError.Size = new Size(w - margen * 2, 18);
+                y3 += 22;
+
+                dtgBDInv.Location = new Point(margen, y3);
+                dtgBDInv.Size = new Size(w - margen * 2, h - y3 - 8);
+            }
+
+            pnlBD.Invalidate();
+        }
+
         private void pnlDetalles_Resize(object sender, EventArgs e)
         {
             int w = pnlDetalles.Width;
             int h = pnlDetalles.Height;
-
             int margenIzq = 20;
-            int xInput = (int)(w * 0.40);
-            int anchoInput = w - xInput - 20;
+            int anchoInput = w - (margenIzq * 2);
+
+            // Alto fijo para inputs — no depende de h
+            int altoInput = 32;
+            int altoLabel = 25;
+            int espacio = 10; // espacio entre campos
 
             // TÍTULO
-            lbTitulo.Location = new Point(margenIzq, 15);
-            lbTitulo.Size = new Size(w - 40, 40);
+            llbDetalles.Location = new Point(margenIzq, 15);
+            llbDetalles.Size = new Size(anchoInput, 40);
 
-            // BUSCAR ID
-            int yID = (int)(h * 0.12);
-            lblID.Location = new Point(margenIzq, yID + 12);
-            panel1.Location = new Point(xInput, yID);
-            panel1.Size = new Size(anchoInput - 95, 45);
-            textID.Location = new Point(5, 12);
-            textID.Size = new Size(panel1.Width - 10, 22);
-            btnBuscar.Location = new Point(xInput + anchoInput - 90, yID);
-            btnBuscar.Size = new Size(90, 45);
+            // ID
+            int yID = 65;
+            lblID.Location = new Point(margenIzq, yID);
+            lblID.Size = new Size(anchoInput, altoLabel);
+            textID.Location = new Point(margenIzq, yID + altoLabel + 2);
+            textID.Size = new Size(anchoInput, altoInput);
 
             // NOMBRE
-            int yNombre = (int)(h * 0.25);
-            lblNombre.Location = new Point(margenIzq, yNombre + 12);
-            pnlNombre.Location = new Point(xInput, yNombre);
-            pnlNombre.Size = new Size(anchoInput, 45);
-            textNombre.Location = new Point(5, 12);
-            textNombre.Size = new Size(pnlNombre.Width - 10, 22);
+            int yNombre = yID + altoLabel + altoInput + espacio + 15;
+            lblNombre.Location = new Point(margenIzq, yNombre);
+            lblNombre.Size = new Size(anchoInput, altoLabel);
+            textNombre.Location = new Point(margenIzq, yNombre + altoLabel + 2);
+            textNombre.Size = new Size(anchoInput, altoInput);
 
+            // STOCK y PRECIO — misma fila
+            int yStockPrecio = yNombre + altoLabel + altoInput + espacio + 15;
+            int anchoCampo = (int)((anchoInput - 10) / 2);
 
-            // PRECIO DE VENTA
-            int yPV = (int)(h * 0.51);
-            lblVenta.Location = new Point(margenIzq, yPV + 12);
-            pnlPV.Location = new Point(xInput, yPV);
-            pnlPV.Size = new Size(anchoInput, 45);
-            textPV.Location = new Point(5, 12);
-            textPV.Size = new Size(pnlPV.Width - 10, 22);
+            lblStock.Location = new Point(margenIzq, yStockPrecio);
+            lblStock.Size = new Size(anchoCampo, altoLabel);
+            textStock.Location = new Point(margenIzq, yStockPrecio + altoLabel + 2);
+            textStock.Size = new Size(anchoCampo, altoInput);
 
-            // EN STOCK
-            int yStock = (int)(h * 0.64);
-            lblStock.Location = new Point(margenIzq, yStock + 12);
-            pnlStock.Location = new Point(xInput, yStock);
-            pnlStock.Size = new Size(anchoInput, 45);
-            textStock.Location = new Point(5, 12);
-            textStock.Size = new Size(pnlStock.Width - 10, 22);
+            lblPrecio.Location = new Point(margenIzq + anchoCampo + 10, yStockPrecio);
+            lblPrecio.Size = new Size(anchoCampo, altoLabel);
+            textPV.Location = new Point(margenIzq + anchoCampo + 10, yStockPrecio + altoLabel + 2);
+            textPV.Size = new Size(anchoCampo, altoInput);
 
-            // BOTONES
-            int yBotones = (int)(h * 0.82);
-            int anchoBtn = (int)(w * 0.25);
-            int espacioBtn = (int)(w * 0.03);
+            // CATEGORÍA
+            int yCategoria = yStockPrecio + altoLabel + altoInput + espacio + 15;
+            lblCategoria.Location = new Point(margenIzq, yCategoria);
+            lblCategoria.Size = new Size(anchoInput, altoLabel);
+            BoxPrueba.Location = new Point(margenIzq, yCategoria + altoLabel + 2);
+            BoxPrueba.Size = new Size(anchoInput, altoInput);
+
+            // BOTONES — siempre pegados al fondo
+            int yBotones = h - 70;
+            int anchoBtn = (int)((anchoInput - 20) / 3);
             btnNuevo.Location = new Point(margenIzq, yBotones);
-            btnNuevo.Size = new Size(anchoBtn, 45);
-            btnGuardar.Location = new Point(margenIzq + anchoBtn + espacioBtn, yBotones);
-            btnGuardar.Size = new Size(anchoBtn, 45);
-            btnEliminar.Location = new Point(margenIzq + (anchoBtn + espacioBtn) * 2, yBotones);
-            btnEliminar.Size = new Size(anchoBtn, 45);
+            btnNuevo.Size = new Size(anchoBtn, 50);
+            btnGuardar.Location = new Point(margenIzq + anchoBtn + 10, yBotones);
+            btnGuardar.Size = new Size(anchoBtn, 50);
+            btnEliminar.Location = new Point(margenIzq + (anchoBtn + 10) * 2, yBotones);
+            btnEliminar.Size = new Size(anchoBtn, 50);
 
             pnlDetalles.Invalidate();
         }
@@ -332,9 +450,8 @@ namespace VeloxSoft.Formularios
         private void FormInventario_Load(object sender, EventArgs e)
         {
             pnlDetalles_Resize(this, EventArgs.Empty);
-            pnlBD_Resize(this, EventArgs.Empty);  // ← AGREGA ESTO
             CargarInventario();                   // LLAMAMOS AL MÉTODO PARA CARGAR LOS DATOS DE PRUEBA EN LA TABLA, LUEGO LO ELIMINAMOS O LO MODIFICAMOS PARA QUE CARGUE LOS DATOS REALES DESDE LA BASE DE DATOS
-
+            pnlBD_Resize(this, EventArgs.Empty); // 
         }
         private void CargarInventario() // CON ESTE MÉTODO LLENAMOS LA TABLA CON DATOS DE PRUEBA PARA VER CÓMO QUEDA, LUEGO LO ELIMINAMOS O LO MODIFICAMOS PARA QUE CARGUE LOS DATOS REALES DESDE LA BASE DE DATOS
         {
@@ -387,54 +504,7 @@ namespace VeloxSoft.Formularios
             RedondearBoton(btnGuardarBD, e, 15);
         }
 
-        private void pnlBD_Resize(object sender, EventArgs e)
-        {
-            int w = pnlBD.Width;
-            int h = pnlBD.Height;
 
-            // TÍTULO
-            Titulo.Location = new Point(17, 12);
-            Titulo.Size = new Size(w - 30, 35);
-
-            // TODO EN UNA SOLA LÍNEA — Y: 55
-            int y = 55;
-            int anchoCmb = (int)(w * 0.18);
-            int anchoBuscar = (int)(w * 0.22);
-            int altoControl = 38;
-            int x = 17;
-
-            // BUSCAR ID
-            BuscarBD.Location = new Point(x, y + 8);
-            x += BuscarBD.Width + 5;
-            pnlBuscarBD.Location = new Point(x, y);
-            pnlBuscarBD.Size = new Size(anchoBuscar, altoControl);
-            tbBuscarBD.Location = new Point(5, 9);
-            tbBuscarBD.Size = new Size(pnlBuscarBD.Width - 10, 22);
-            x += anchoBuscar + 8;
-
-            btnGuardarBD.Location = new Point(x, y);
-            btnGuardarBD.Size = new Size(70, altoControl);
-            x += 70 + 15;
-
-            // CATEGORÍA
-            lbCategoria.Location = new Point(x, y);
-            x += lbCategoria.Width + 5;
-            cbCategoria.Location = new Point(x, y);
-            cbCategoria.Size = new Size(160, altoControl);
-            x += anchoCmb + 15;
-
-            // ESTADO
-            lbEstado.Location = new Point(x, y);
-            x += lbEstado.Width + 5;
-            cbEstado.Location = new Point(x, y);
-            cbEstado.Size = new Size(100, altoControl);
-
-            // TABLA
-            dtgBDInv.Location = new Point(11, y + altoControl + 10);
-            dtgBDInv.Size = new Size(w - 22, h - (y + altoControl + 25));
-
-            pnlBD.Invalidate();
-        }
         private void lblID_Click(object sender, EventArgs e)
         {
 
@@ -451,6 +521,83 @@ namespace VeloxSoft.Formularios
         }
 
         private void cbCategoria_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textID_Leave(object sender, EventArgs e)
+        {
+            if (textID.Text == "")
+            {
+                textID.Text = "Ej: 4011";
+                textID.ForeColor = Color.DarkGray;
+            }
+        }
+
+        private void textID_Enter(object sender, EventArgs e)
+        {
+            if (textID.Text == "Ej: 4011")
+            {
+                textID.Text = "";
+                textID.ForeColor = Color.Black;
+            }
+        }
+
+        private void textNombre_Leave(object sender, EventArgs e)
+        {
+            if (textNombre.Text == "")
+            {
+                textNombre.Text = "Nombre producto...";
+                textNombre.ForeColor = Color.DarkGray;
+            }
+        }
+
+        private void textNombre_Enter(object sender, EventArgs e)
+        {
+            if (textNombre.Text == "Nombre producto...")
+            {
+                textNombre.Text = "";
+                textNombre.ForeColor = Color.Black;
+            }
+        }
+
+        private void textStock_Leave(object sender, EventArgs e)
+        {
+            if (textStock.Text == "")
+            {
+                textStock.Text = "0";
+                textStock.ForeColor = Color.DarkGray;
+            }
+        }
+
+        private void textStock_Enter(object sender, EventArgs e)
+        {
+            if (textStock.Text == "0")
+            {
+                textStock.Text = "";
+                textStock.ForeColor = Color.Black;
+            }
+        }
+
+        private void textPV_Leave(object sender, EventArgs e)
+        {
+            if (textPV.Text == "")
+            {
+                textPV.Text = "0";
+                textPV.ForeColor = Color.DarkGray;
+            }
+        }
+
+        private void textPV_Enter(object sender, EventArgs e)
+        {
+            if (textPV.Text == "0")
+            {
+                textPV.Text = "";
+                textPV.ForeColor = Color.Black;
+            }
+        }
+
+        private void BuscarBD_Click(object sender, EventArgs e)
         {
 
         }
