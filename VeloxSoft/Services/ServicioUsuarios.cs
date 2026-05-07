@@ -18,7 +18,7 @@ namespace VeloxSoft.Services
             errorMessage = null;
             try
             {
-                var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
+                using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
                 conn.Open();
                 using var cmd = new NpgsqlCommand(
                     @"SELECT * FROM tbl_usuario WHERE estado = true", conn);
@@ -52,7 +52,7 @@ namespace VeloxSoft.Services
             errorMessage = null;
             try
             {
-                var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
+                using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
                 conn.Open();
                 using var cmd = new NpgsqlCommand(
                     @"UPDATE tbl_usuario SET estado = false WHERE id_usuario = @id", conn);
@@ -80,7 +80,7 @@ namespace VeloxSoft.Services
             errorMessage = null;
             try
             {
-                var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
+                using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
                 conn.Open();
                 using var cmd = new NpgsqlCommand(
                     @"UPDATE tbl_usuario SET password = @password, rol = @rol WHERE id_usuario = @id", conn);
@@ -110,7 +110,7 @@ namespace VeloxSoft.Services
             errorMessage = null;
             try
             {
-                var conn = new NpgsqlConnection(_dbConfig.GetConnection(Roles.Crud));
+                using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Roles.Crud));
                 conn.Open();
                 using var cmd = new NpgsqlCommand(
                     "UPDATE tbl_usuario SET secion = false WHERE id = @id", conn);
@@ -144,7 +144,7 @@ namespace VeloxSoft.Services
             }
             catch (Exception e)
             {
-                errorMessage = "Error inesperado.";
+                errorMessage = $"Error inesperado: {e.Message}";
             }
         }
 
