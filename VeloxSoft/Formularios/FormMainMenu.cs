@@ -11,6 +11,7 @@ namespace VeloxSoft
 {
     public partial class FormMainMenu : Form
     {
+        private System.Windows.Forms.Timer _TimerActividad;
         private readonly ServicioInventario _ServicioInventario;
         private readonly ServicioUsuarios _ServicioUsuarios;
         // Fields
@@ -231,6 +232,20 @@ namespace VeloxSoft
         private void panelTitleBar_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+        private void FormMainMenu_Load(object sender, EventArgs e)
+        {
+            IniciarTimer();
+        }
+        private void IniciarTimer()
+        {
+            _TimerActividad = new System.Windows.Forms.Timer();
+            _TimerActividad.Interval = 5 * 60 * 1000; // 5 minuto
+            _TimerActividad.Tick += (s, e) =>
+            {
+                _ServicioUsuarios.ActualizarActividad(Program.UsuarioLogueado.Id, out _);
+            };
+            _TimerActividad.Start();
         }
     }
 }

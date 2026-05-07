@@ -393,6 +393,7 @@
             FormBorderStyle = FormBorderStyle.None;
             Name = "FormMainMenu";
             Text = "Form1";
+            Load += FormMainMenu_Load;
             panelMenu.ResumeLayout(false);
             panelLogo.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)btnInicio).EndInit();

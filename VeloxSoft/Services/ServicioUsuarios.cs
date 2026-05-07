@@ -123,5 +123,30 @@ namespace VeloxSoft.Services
             }
         }
 
+        public void ActualizarActividad(long idUsuario, out string errorMessage)
+        {
+            errorMessage = null;
+            try
+            {
+                using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
+                conn.Open();
+
+                using var cmd = new NpgsqlCommand(
+                    "UPDATE tbl_usuario SET ultima_actividad = @timestamp WHERE id = @id", conn);
+                cmd.Parameters.AddWithValue("timestamp", DateTime.Now);
+                cmd.Parameters.AddWithValue("id", idUsuario);
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (PostgresException e)
+            {
+                errorMessage = "Error de base de datos.";
+            }
+            catch (Exception e)
+            {
+                errorMessage = "Error inesperado.";
+            }
+        }
+
     }
 }

@@ -25,7 +25,7 @@ namespace VeloxSoft.Services
             errorMessage = null;
             try
             {
-                var conn = new NpgsqlConnection(_dbConfig.GetConnection(Roles.Lectura));
+                var conn = new NpgsqlConnection(_dbConfig.GetConnection(Roles.Crud));
                 conn.Open();
 
                 using var cmd = new NpgsqlCommand(
