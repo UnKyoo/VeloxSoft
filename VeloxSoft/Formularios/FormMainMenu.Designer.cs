@@ -75,7 +75,7 @@
             panelMenu.Dock = DockStyle.Left;
             panelMenu.Location = new Point(0, 0);
             panelMenu.Name = "panelMenu";
-            panelMenu.Size = new Size(219, 666);
+            panelMenu.Size = new Size(219, 667);
             panelMenu.TabIndex = 0;
             // 
             // btnCaja
@@ -266,7 +266,7 @@
             panelTitleBar.Dock = DockStyle.Top;
             panelTitleBar.Location = new Point(219, 0);
             panelTitleBar.Name = "panelTitleBar";
-            panelTitleBar.Size = new Size(745, 76);
+            panelTitleBar.Size = new Size(746, 76);
             panelTitleBar.TabIndex = 1;
             panelTitleBar.Paint += panelTitleBar_Paint;
             panelTitleBar.MouseDown += panelTitleBar_MouseDown;
@@ -282,7 +282,7 @@
             btnMaximixed.IconColor = Color.DarkBlue;
             btnMaximixed.IconFont = FontAwesome.Sharp.IconFont.Auto;
             btnMaximixed.IconSize = 33;
-            btnMaximixed.Location = new Point(683, -3);
+            btnMaximixed.Location = new Point(684, -3);
             btnMaximixed.Name = "btnMaximixed";
             btnMaximixed.Size = new Size(33, 33);
             btnMaximixed.TabIndex = 4;
@@ -300,7 +300,7 @@
             btnMinus.IconColor = Color.Sienna;
             btnMinus.IconFont = FontAwesome.Sharp.IconFont.Solid;
             btnMinus.IconSize = 34;
-            btnMinus.Location = new Point(651, -3);
+            btnMinus.Location = new Point(652, -3);
             btnMinus.Name = "btnMinus";
             btnMinus.Size = new Size(34, 35);
             btnMinus.SizeMode = PictureBoxSizeMode.CenterImage;
@@ -319,10 +319,9 @@
             btnExit.IconColor = Color.DarkRed;
             btnExit.IconFont = FontAwesome.Sharp.IconFont.Solid;
             btnExit.IconSize = 39;
-            btnExit.Location = new Point(713, -5);
+            btnExit.Location = new Point(714, -5);
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(39, 39);
-            btnExit.SizeMode = PictureBoxSizeMode.CenterImage;
             btnExit.TabIndex = 2;
             btnExit.TabStop = false;
             btnExit.Click += btnExit_Click;
@@ -357,7 +356,7 @@
             panelDesktop.Dock = DockStyle.Fill;
             panelDesktop.Location = new Point(219, 76);
             panelDesktop.Name = "panelDesktop";
-            panelDesktop.Size = new Size(745, 590);
+            panelDesktop.Size = new Size(746, 591);
             panelDesktop.TabIndex = 2;
             // 
             // lblLogoDesktop
@@ -367,7 +366,7 @@
             lblLogoDesktop.Image = (Image)resources.GetObject("lblLogoDesktop.Image");
             lblLogoDesktop.Location = new Point(0, 0);
             lblLogoDesktop.Name = "lblLogoDesktop";
-            lblLogoDesktop.Size = new Size(745, 590);
+            lblLogoDesktop.Size = new Size(746, 591);
             lblLogoDesktop.SizeMode = PictureBoxSizeMode.Zoom;
             lblLogoDesktop.TabIndex = 1;
             lblLogoDesktop.TabStop = false;
@@ -378,14 +377,14 @@
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(219, 76);
             panel1.Name = "panel1";
-            panel1.Size = new Size(745, 1);
+            panel1.Size = new Size(746, 1);
             panel1.TabIndex = 3;
             // 
             // FormMainMenu
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(964, 666);
+            ClientSize = new Size(965, 667);
             Controls.Add(panel1);
             Controls.Add(panelDesktop);
             Controls.Add(panelTitleBar);

@@ -248,4 +248,5 @@ namespace VeloxSoft
             _TimerActividad.Start();
         }
     }
-}
+    }
+

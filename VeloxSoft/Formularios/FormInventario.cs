@@ -16,28 +16,288 @@ namespace VeloxSoft.Formularios
         private bool _modoEdicion = false; // Variable para controlar si estamos editando o creando un nuevo producto
         private readonly ServicioInventario _ServicioInventario;
 
-        // Constructor
         public FormInventario(ServicioInventario ServicioInventario)
         {
             InitializeComponent();
-            _ServicioInventario = ServicioInventario;
-            // Esto obliga al formulario a redibujarse mientras el usuario arrastra el mouse
+            _ServicioInventario = ServicioInventario;   
+            this.ResizeRedraw = true;
             this.ResizeRedraw = true;
             // Evita el efecto de "congelado" o parpadeo
             this.DoubleBuffered = true;
-            pnlBD_Resize(this, EventArgs.Empty);
+            pnlInventario_Resize(this, EventArgs.Empty);
+            pnlFormulario_Resize(this, EventArgs.Empty);
+            pnlBotones_Resize(this, EventArgs.Empty);
+            pnlDB_Resize(this, EventArgs.Empty);
+ 
+        }
+
+
+        //DIseño de paneles y botones para el formulario de inventario.
+
+        private void RedondearPanel(Panel p, PaintEventArgs e, int radio)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            GraphicsPath path = new GraphicsPath();
+
+            // Dibujamos el camino de las esquinas
+            path.AddArc(0, 0, radio, radio, 180, 90);
+            path.AddArc(p.Width - radio, 0, radio, radio, 270, 90);
+            path.AddArc(p.Width - radio, p.Height - radio, radio, radio, 0, 90);
+            path.AddArc(0, p.Height - radio, radio, radio, 90, 90);
+            path.CloseAllFigures();
+
+            // Aplicamos la forma al panel para que sea "físicamente" redondo
+            p.Region = new Region(path);
+
+            // Dibuja un borde sutil con el verde #A4D1A5 de tu paleta Fruit Salad
+            // Esto hace que el cuadro resalte sobre el fondo verde oscuro
+            using (Pen pen = new Pen(ColorTranslator.FromHtml("#A4D1A5"), 2))
+            {
+                e.Graphics.DrawPath(pen, path);
+            }
+        }
+        private void RedondearBoton(Button btn, PaintEventArgs e, int radio)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; // Hace que el borde se vea suave
+
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddArc(0, 0, radio, radio, 180, 90);
+                path.AddArc(btn.Width - radio, 0, radio, radio, 270, 90);
+                path.AddArc(btn.Width - radio, btn.Height - radio, radio, radio, 0, 90);
+                path.AddArc(0, btn.Height - radio, radio, radio, 90, 90);
+                path.CloseAllFigures();
+
+                // Aplicamos la región redondeada al botón
+                btn.Region = new Region(path);
+            }
+        }
+
+
+        //Fin del diseño de paneles y botones para el formulario de inventario.
+        private void FormInventarioP_Load(object sender, EventArgs e)
+        {
+            CargarInventario();                   // LLAMAMOS AL MÉTODO PARA CARGAR LOS DATOS DE PRUEBA EN LA TABLA, LUEGO LO ELIMINAMOS O LO MODIFICAMOS PARA QUE CARGUE LOS DATOS REALES DESDE LA BASE DE DATOS
 
         }
-        private void FormInventario_Load(object sender, EventArgs e)
+
+        private void pnlFormulario_Paint(object sender, PaintEventArgs e)
         {
-            pnlDetalles_Resize(this, EventArgs.Empty);
-            CargarInventario();                   // LLAMAMOS AL MÉTODO PARA CARGAR LOS DATOS DE PRUEBA EN LA TABLA, LUEGO LO ELIMINAMOS O LO MODIFICAMOS PARA QUE CARGUE LOS DATOS REALES DESDE LA BASE DE DATOS
-            pnlBD_Resize(this, EventArgs.Empty);
+            RedondearPanel((Panel)sender, e, 15);
         }
-        //BOTON PARA ELIMINAR
+
+        private void pnlBotones_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearPanel((Panel)sender, e, 15);
+        }
+
+        private void pnlDB_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearPanel((Panel)sender, e, 15);
+        }
+
+        private void btnGuardar_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnGuardar, e, 15);
+        }
+
+        private void btnLimpiar_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnLimpiar, e, 15);
+        }
+
+        private void btnEliminar_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnEliminar, e, 15);
+        }
+
+        private void LabelError2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pnlInventario_Resize(object sender, EventArgs e)
+        {
+            int w = pnlInventario.Width;
+            int h = pnlInventario.Height;
+            int margen = 12;
+            int espacioH = 10;
+
+            int anchoIzq = (int)(w * 0.38) - margen;
+            int anchoDer = w - anchoIzq - (margen * 3) - espacioH;
+            int altoBotones = anchoDer < 650 ? 85 : 55;
+
+            // FORMULARIO
+            pnlFormulario.Location = new Point(margen, margen);
+            pnlFormulario.Size = new Size(anchoIzq, h - margen * 2);
+
+            // BOTONES
+            pnlBotones.Location = new Point(anchoIzq + margen * 2, margen);
+            pnlBotones.Size = new Size(anchoDer, altoBotones);
+
+            // DB
+            int yDB = margen + altoBotones + espacioH;
+            pnlDB.Location = new Point(anchoIzq + margen * 2, yDB);
+            pnlDB.Size = new Size(anchoDer, h - yDB - margen);
+
+            pnlInventario.Invalidate();
+        }
+
+        private void pnlBotones_Resize(object sender, EventArgs e)
+        {
+            int w = pnlBotones.Width;
+            int h = pnlBotones.Height;
+            int margenH = 15; // Margen izquierdo y derecho
+            int altoControl = 28;
+            int espacioPequeño = 5;  // Espacio entre Label y su TextBox/Combo
+            int espacioGrande = 20;   // Espacio entre grupos (Buscar -> Categoría -> Estado)
+
+            // Decidimos si usar una o dos líneas según el ancho real
+            bool dosLineas = w < 750; // Aumenté un poco el umbral para evitar amontonamiento
+
+            if (!dosLineas)
+            {
+                // ── UNA LÍNEA (Pantalla Ancha) ──
+                int y = (h - altoControl) / 2;
+
+                // 1. Calcular anchos dinámicos para los grupos
+                // Dejamos fijos los labels y el botón de lupa
+                int anchoLblBusc = lblBuscarI.PreferredWidth;
+                int anchoBtnLupa = 35;
+                int anchoLblCat = lbCategoria.PreferredWidth;
+                int anchoLblEst = lbEstado.PreferredWidth;
+
+                // El espacio restante se divide entre los 3 controles de entrada (Search, Cat, Est)
+                int espacioDisponible = w - (margenH * 2) - anchoLblBusc - anchoBtnLupa - anchoLblCat - anchoLblEst - (espacioPequeño * 3) - (espacioGrande * 2);
+                int anchoInput = espacioDisponible / 3;
+
+                // --- Grupo Buscar ---
+                lblBuscarI.Location = new Point(margenH, y + 4);
+                textBuscarID.Location = new Point(lblBuscarI.Right + espacioPequeño, y);
+                textBuscarID.Size = new Size(anchoInput, altoControl);
+                btnBuscarI.Location = new Point(textBuscarID.Right + 2, y);
+                btnBuscarI.Size = new Size(anchoBtnLupa, altoControl);
+
+                // --- Grupo Categoría ---
+                lbCategoria.Location = new Point(btnBuscarI.Right + espacioGrande, y + 4);
+                cbCategoria.Location = new Point(lbCategoria.Right + espacioPequeño, y);
+                cbCategoria.Size = new Size(anchoInput, altoControl);
+
+                // --- Grupo Estado ---
+                lbEstado.Location = new Point(cbCategoria.Right + espacioGrande, y + 4);
+                cbEstado.Location = new Point(lbEstado.Right + espacioPequeño, y);
+                cbEstado.Size = new Size(w - cbEstado.Left - margenH, altoControl);
+            }
+            else
+            {
+                // ── DOS LÍNEAS (Pantalla Estrecha / Tablet) ──
+                int margenV = 10;
+                int anchoDisponible = w - (margenH * 2);
+                int anchoBtnLupa = 35;
+
+                // FILA 1: Buscar Producto (Ocupa todo el ancho arriba)
+                int y1 = margenV;
+                lblBuscarI.Location = new Point(margenH, y1 + 4);
+
+                int anchoTxtBuscar = anchoDisponible - lblBuscarI.Width - anchoBtnLupa - 10;
+                textBuscarID.Location = new Point(lblBuscarI.Right + espacioPequeño, y1);
+                textBuscarID.Size = new Size(anchoTxtBuscar, altoControl);
+
+                btnBuscarI.Location = new Point(textBuscarID.Right + 2, y1);
+                btnBuscarI.Size = new Size(anchoBtnLupa, altoControl);
+
+                // FILA 2: Combos (Divididos 50/50 abajo)
+                int y2 = y1 + altoControl + 10;
+                int anchoGrupo = (anchoDisponible - espacioGrande) / 2;
+
+                // Categoría
+                lbCategoria.Location = new Point(margenH, y2 + 4);
+                cbCategoria.Location = new Point(lbCategoria.Right + espacioPequeño, y2);
+                cbCategoria.Size = new Size(anchoGrupo - lbCategoria.Width - espacioPequeño, altoControl);
+
+                // Estado
+                lbEstado.Location = new Point(cbCategoria.Right + espacioGrande, y2 + 4);
+                cbEstado.Location = new Point(lbEstado.Right + espacioPequeño, y2);
+                cbEstado.Size = new Size(w - cbEstado.Left - margenH, altoControl);
+            }
+
+            pnlBotones.Invalidate();
+        }
+
+        private void pnlFormulario_Resize(object sender, EventArgs e)
+        {
+            int w = pnlFormulario.Width;
+            int h = pnlFormulario.Height;
+            int margen = 40;
+            int anchoInput = w - (margen * 2);
+            int altoInput = 32;
+            int altoLabel = 23;
+            int espacio = 18;
+
+            // TÍTULO
+            lblTitulo.Location = new Point(margen - 10, 10);
+
+            // ID
+            int yID = 60;
+            lblID.Location = new Point(margen, yID);
+            textID.Location = new Point(margen, yID + altoLabel + 2);
+            textID.Size = new Size(anchoInput, altoInput);
+
+            // NOMBRE
+            int yNombre = textID.Bottom + espacio;
+            lblNombre.Location = new Point(margen, yNombre);
+            textNombre.Location = new Point(margen, yNombre + altoLabel + 2);
+            textNombre.Size = new Size(anchoInput, altoInput);
+
+            // STOCK y PRECIO — misma fila
+            int yStockPrecio = textNombre.Bottom + espacio;
+            int anchoCampo = (int)((anchoInput - 10) / 2);
+
+            lblStock.Location = new Point(margen, yStockPrecio);
+            textStock.Location = new Point(margen, yStockPrecio + altoLabel + 2);
+            textStock.Size = new Size(anchoCampo, altoInput);
+
+            lblPrecio.Location = new Point(margen + anchoCampo + 10, yStockPrecio);
+            textPV.Location = new Point(margen + anchoCampo + 10, yStockPrecio + altoLabel + 2);
+            textPV.Size = new Size(anchoCampo, altoInput);
+
+            // CATEGORÍA
+            int yCategoria = textStock.Bottom + espacio;
+            lblCategoria.Location = new Point(margen, yCategoria);
+            BoxPrueba.Location = new Point(margen, yCategoria + altoLabel + 2);
+            BoxPrueba.Size = new Size(anchoInput, altoInput);
+
+            // BOTONES
+            int yBotones = h - 120;
+            int anchoBtn = (int)((anchoInput - 10) / 2);
+
+            btnGuardar.Location = new Point(margen, yBotones);
+            btnGuardar.Size = new Size(anchoInput, 48);
+
+            btnLimpiar.Location = new Point(margen, btnGuardar.Bottom + 10);
+            btnLimpiar.Size = new Size(anchoBtn, 48);
+
+            btnEliminar.Location = new Point(margen + anchoBtn + 10, btnGuardar.Bottom + 10);
+            btnEliminar.Size = new Size(anchoBtn, 48);
+
+            pnlFormulario.Invalidate();
+        }
+
+        private void pnlDB_Resize(object sender, EventArgs e)
+        {
+            int w = pnlDB.Width;
+            int h = pnlDB.Height;
+            int margen = 10;
+
+            dtgBDInv.Location = new Point(margen, margen);
+            dtgBDInv.Size = new Size(w - margen * 2, h - margen * 2);
+
+            pnlDB.Invalidate();
+        }
+
         private void btnEliminar_Click(object sender, EventArgs e)
         {
-            
+
             // Validar que se haya seleccionado un producto en la tabla
             if (dtgBDInv.SelectedRows.Count == 0)
             {
@@ -62,7 +322,7 @@ namespace VeloxSoft.Formularios
             //Llamar al serivico para eliminar el producto.
             _ServicioInventario.Eliminar_Producto(idProducto, out string errorMessage);
             string EstadoProducto = dtgBDInv.SelectedRows[0].Cells[5].Value?.ToString() ?? "";
-            if(EstadoProducto == "Inactivo")
+            if (EstadoProducto == "Inactivo")
             {
                 LabelError.Text = "El producto ya se encuentra inactivo.";
                 LabelError.Visible = true;
@@ -89,12 +349,12 @@ namespace VeloxSoft.Formularios
                 cbEstadoInv.Visible = false;
                 BoxPrueba.Enabled = true;
             }
-        }
-        //FIN BOTON PARA ELIMINAR
 
-        //METODO PARA GUARDAR LOS CAMBIOS EN LA BASE DE DATOS, ESTE MÉTODO SE USA TANTO PARA CREAR UN NUEVO PRODUCTO COMO PARA ACTUALIZAR UNO EXISTENTE, DEPENDE DEL VALOR DE _modoEdicion (Gil)
+        }
+
         private void btnGuardar_Click(object sender, EventArgs e)
         {
+
             if (!_modoEdicion) //FALSO
             {
                 // 1. Validar que los campos no estén vacíos
@@ -174,7 +434,7 @@ namespace VeloxSoft.Formularios
                 }
             }
             else //VERDADERO
-            {       
+            {
                 // Determinar si el producto estaba inactivo según si cbEstadoInv está visible
                 bool esInactivo = cbEstadoInv.Visible;
 
@@ -268,14 +528,13 @@ namespace VeloxSoft.Formularios
                 LabelError2.Visible = true;
                 CargarInventario();
 
-                btnNuevo_Click(sender, e);
+                btnLimpiar_Click(sender, e);
             }
         }
-        //FIN METODO PARA GUARDAR LOS CAMBIOS EN LA BASE DE DATOS, ESTE MÉTODO SE USA TANTO PARA CREAR UN NUEVO PRODUCTO COMO PARA ACTUALIZAR UNO EXISTENTE, DEPENDE DEL VALOR DE _modoEdicion (Gil)
-       
-        //BOTON NUEVO (LIMPIAR) PARA LIMPIAR CAMPOS
-        private void btnNuevo_Click(object sender, EventArgs e)
+
+        private void btnLimpiar_Click(object sender, EventArgs e)
         {
+
             //Limpiamos los campos para permitir ingresar un nuevo producto
             textID.Text = string.Empty;
             textNombre.Text = string.Empty;
@@ -342,98 +601,11 @@ namespace VeloxSoft.Formularios
                     producto.Precio.ToString("F2"),
                     producto.Estado ? "Activo" : "Inactivo");
             }
-
-        }
-        //FIN PARA CARGAR DATOS EN LA TABLA AL INICIAR Y EN EL FILTRO
-
-        // INICIO EVENTOS ENTER - LEAVE PARA LOS TEXTBOX, ESTO ES PARA SIMULAR PLACEHOLDERS EN LOS TEXTBOX (Gil)
-        private void textID_Leave(object sender, EventArgs e)
-        {
-            if (textID.Text == "")
-            {
-                textID.Text = "Ej: 4011";
-                textID.ForeColor = Color.DarkGray;
-            }
         }
 
-        private void textID_Enter(object sender, EventArgs e)
-        {
-            if (textID.Text == "Ej: 4011")
-            {
-                textID.Text = "";
-                textID.ForeColor = Color.Black;
-            }
-        }
-        private void textNombre_Leave(object sender, EventArgs e)
-        {
-            if (textNombre.Text == "")
-            {
-                textNombre.Text = "Nombre producto...";
-                textNombre.ForeColor = Color.DarkGray;
-            }
-        }
-        private void textNombre_Enter(object sender, EventArgs e)
-        {
-            if (textNombre.Text == "Nombre producto...")
-            {
-                textNombre.Text = "";
-                textNombre.ForeColor = Color.Black;
-            }
-        }
-        private void textStock_Leave(object sender, EventArgs e)
-        {
-            if (textStock.Text == "")
-            {
-                textStock.Text = "0";
-                textStock.ForeColor = Color.DarkGray;
-            }
-        }
-        private void textStock_Enter(object sender, EventArgs e)
-        {
-            if (textStock.Text == "0")
-            {
-                textStock.Text = "";
-                textStock.ForeColor = Color.Black;
-            }
-        }
-
-        private void textPV_Leave(object sender, EventArgs e)
-        {
-            if (textPV.Text == "")
-            {
-                textPV.Text = "0";
-                textPV.ForeColor = Color.DarkGray;
-            }
-        }
-        private void textPV_Enter(object sender, EventArgs e)
-        {
-            if (textPV.Text == "0")
-            {
-                textPV.Text = "";
-                textPV.ForeColor = Color.Black;
-            }
-        }
-        private void textBuscarID_Enter(object sender, EventArgs e)
-        {
-            if (textBuscarID.Text == "Ej: 4011")
-            {
-                textBuscarID.Text = "";
-                textBuscarID.ForeColor = Color.Black;
-            }
-        }
-        private void textBuscarID_Leave(object sender, EventArgs e)
-        {
-            if (textBuscarID.Text == "")
-            {
-                textBuscarID.Text = "Ej: 4011";
-                textBuscarID.ForeColor = Color.DarkGray;
-            }
-        }
-        //FINAL EVENTOS ENTER - LEAVE PARA LOS TEXTBOX (Gil)
-
-        // Evento para cargar los datos del producto seleccionado en la tabla a los campos de texto para su edición (Gil)
         private void dtgBDInv_DoubleClick(object sender, EventArgs e)
         {
+
             if (dtgBDInv.CurrentRow == null) return;
             DataGridViewRow fila = dtgBDInv.CurrentRow;
 
@@ -443,7 +615,7 @@ namespace VeloxSoft.Formularios
             BoxPrueba.Text = fila.Cells[2].Value?.ToString() ?? "";
             textStock.Text = fila.Cells[3].Value?.ToString() ?? "";
             textPV.Text = fila.Cells[4].Value?.ToString() ?? "";
-           
+
 
             // ID siempre bloqueado
             textID.ReadOnly = true;
@@ -469,7 +641,7 @@ namespace VeloxSoft.Formularios
                 textNombre.ForeColor = Color.Black;
                 textPV.ForeColor = Color.Black;
                 textStock.ForeColor = Color.Black;
-                
+
             }
             else
             {
@@ -540,8 +712,23 @@ namespace VeloxSoft.Formularios
             }
         }
 
+        private void textID_KeyPress_1(object sender, KeyPressEventArgs e)
+        {
+            // Backspace permitido
+            if (e.KeyChar == (char)Keys.Back) return;
+
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+                e.Handled = true;
+
+            if (textID.Text.Length >= 4)
+            {
+                e.Handled = true;
+            }
+        }
+
         private void textStock_KeyPress(object sender, KeyPressEventArgs e)
         {
+
             bool esPieza = BoxPrueba.SelectedItem?.ToString() == "Pieza";
 
             // Backspace permitido
@@ -603,6 +790,7 @@ namespace VeloxSoft.Formularios
 
         private void textPV_KeyPress(object sender, KeyPressEventArgs e)
         {
+
             // Permitir Backspace
             if (e.KeyChar == (char)Keys.Back)
                 return;
@@ -655,6 +843,7 @@ namespace VeloxSoft.Formularios
             // Bloquear cualquier otro carácter
             e.Handled = true;
         }
+
         private void textBuscarID_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Backspace permitido
@@ -668,9 +857,12 @@ namespace VeloxSoft.Formularios
                 e.Handled = true;
             }
         }
-        // FIN EVENTOS DE VALIDACIÓN DE ENTRADAS
 
-        //EVENTO DE CAMBIO DE INDICE EN cbPruena (Categoria)
+        private void BoxPrueba_KeyPress(object sender, KeyPressEventArgs e)
+        {
+
+        }
+
         private void BoxPrueba_SelectedIndexChanged(object sender, EventArgs e)
         {
             // 1. Verificamos que haya algo seleccionado para evitar el error
@@ -695,10 +887,9 @@ namespace VeloxSoft.Formularios
             }
         }
 
-        //BOTÓN DE BUSQUEDA ESTRUCTURADA.
-        private void btnBuscar_Click_1(object sender, EventArgs e)
+        private void btnBuscarI_Click(object sender, EventArgs e)
         {
-            string id = string.IsNullOrWhiteSpace(textBuscarID.Text) || textBuscarID.Text == "Ej: 4011"? null: textBuscarID.Text.Trim();
+            string id = string.IsNullOrWhiteSpace(textBuscarID.Text) || textBuscarID.Text == "Ej: 4011" ? null : textBuscarID.Text.Trim();
 
             string categoria = cbCategoria.SelectedItem == null ? null : cbCategoria.SelectedItem.ToString();
             string estado = cbEstado.SelectedItem == null ? null : cbEstado.SelectedItem.ToString();
@@ -715,241 +906,8 @@ namespace VeloxSoft.Formularios
             // Reutilizamos la misma lógica de CargarInventario pero con la lista filtrada
             CargarInventario(lista);
         }
-        //FINBOTÓN DE BUSQUEDA ESTRUCTURADA.
-        
-
-        //Lógica visual/GUI (Armando) <-
-        private void pnlBD_Resize(object sender, EventArgs e)
-        {
-            int w = pnlBD.Width;
-            int h = pnlBD.Height;
-            int margen = 15;
-            int altoControl = 32;
-
-            // Umbral — si el panel es mayor a 600px todo en una línea
-            bool unaLinea = w >= 600;
-
-            if (unaLinea)
-            {
-                // ── PANTALLA GRANDE — todo en una sola fila ──
-                int y = 15;
-                int x = margen;
-
-                int anchoLbl = (int)(w * 0.10);
-                int anchoBuscar = (int)(w * 0.20);
-                int anchoBtn = (int)(w * 0.06);
-                int anchoCmb = (int)(w * 0.14);
-
-                // BUSCAR ID
-                BuscarBD.Location = new Point(x, y + 5);
-                BuscarBD.Size = new Size(anchoLbl, 22);
-                x += anchoLbl + 4;
-                x += anchoBuscar + 4;
-
-                btnBuscar.Location = new Point(x, y);
-                btnBuscar.Size = new Size(anchoBtn, altoControl);
-                x += anchoBtn + 10;
-
-                // CATEGORÍA
-                lbCategoria.Location = new Point(x, y + 5);
-                lbCategoria.Size = new Size(anchoLbl, 22);
-                x += anchoLbl + 4;
-
-                cbCategoria.Location = new Point(x, y);
-                cbCategoria.Size = new Size(anchoCmb, altoControl);
-                x += anchoCmb + 10;
-
-                // ESTADO
-                lbEstado.Location = new Point(x, y + 5);
-                lbEstado.Size = new Size(anchoLbl, 22);
-                x += anchoLbl + 4;
-
-                cbEstado.Location = new Point(x, y);
-                cbEstado.Size = new Size(anchoCmb, altoControl);
-
-                y += altoControl + 8;
-
-                LabelError.Location = new Point(margen, y);
-                LabelError.Size = new Size(w - margen * 2, 18);
-                y += 22;
-
-                dtgBDInv.Location = new Point(margen, y);
-                dtgBDInv.Size = new Size(w - margen * 2, h - y - 8);
-            }
-            else
-            {
-                // ── PANTALLA PEQUEÑA — buscar arriba, combos abajo ──
-                int anchoBuscar = w - margen * 2 - 50;
-                int anchoCmb = (int)((w - margen * 2 - 10) / 2);
-
-                // FILA 1 — BUSCAR ID
-                int y1 = 10;
-                BuscarBD.Location = new Point(margen, y1 + 5);
-                BuscarBD.Size = new Size(80, 22);
 
 
-
-                btnBuscar.Location = new Point(w - margen - 46, y1);
-                btnBuscar.Size = new Size(42, altoControl);
-
-                // FILA 2 — COMBOS
-                int y2 = y1 + altoControl + 8;
-
-                lbCategoria.Location = new Point(margen, y2 + 5);
-                lbCategoria.Size = new Size(75, 22);
-
-                cbCategoria.Location = new Point(margen + 78, y2);
-                cbCategoria.Size = new Size(anchoCmb - 78, altoControl);
-
-                lbEstado.Location = new Point(margen + anchoCmb + 10, y2 + 5);
-                lbEstado.Size = new Size(55, 22);
-
-                cbEstado.Location = new Point(margen + anchoCmb + 68, y2);
-                cbEstado.Size = new Size(anchoCmb - 68, altoControl);
-
-                int y3 = y2 + altoControl + 6;
-
-                LabelError.Location = new Point(margen, y3);
-                LabelError.Size = new Size(w - margen * 2, 18);
-                y3 += 22;
-
-                dtgBDInv.Location = new Point(margen, y3);
-                dtgBDInv.Size = new Size(w - margen * 2, h - y3 - 8);
-            }
-
-            pnlBD.Invalidate();
-        }
-
-        //------------ LÓGICA DE GUI ------------
-        private void pnlDetalles_Resize(object sender, EventArgs e)
-        {
-            int w = pnlDetalles.Width;
-            int h = pnlDetalles.Height;
-            int margenIzq = 20;
-            int anchoInput = w - (margenIzq * 2);
-
-            // Alto fijo para inputs — no depende de h
-            int altoInput = 32;
-            int altoLabel = 25;
-            int espacio = 10; // espacio entre campos
-
-            // TÍTULO
-            llbDetalles.Location = new Point(margenIzq, 15);
-            llbDetalles.Size = new Size(anchoInput, 40);
-
-            // ID
-            int yID = 65;
-            lblID.Location = new Point(margenIzq, yID);
-            lblID.Size = new Size(anchoInput, altoLabel);
-            textID.Location = new Point(margenIzq, yID + altoLabel + 2);
-            textID.Size = new Size(anchoInput, altoInput);
-
-            // NOMBRE
-            int yNombre = yID + altoLabel + altoInput + espacio + 15;
-            lblNombre.Location = new Point(margenIzq, yNombre);
-            lblNombre.Size = new Size(anchoInput, altoLabel);
-            textNombre.Location = new Point(margenIzq, yNombre + altoLabel + 2);
-            textNombre.Size = new Size(anchoInput, altoInput);
-
-            // STOCK y PRECIO — misma fila
-            int yStockPrecio = yNombre + altoLabel + altoInput + espacio + 15;
-            int anchoCampo = (int)((anchoInput - 10) / 2);
-
-            lblStock.Location = new Point(margenIzq, yStockPrecio);
-            lblStock.Size = new Size(anchoCampo, altoLabel);
-            textStock.Location = new Point(margenIzq, yStockPrecio + altoLabel + 2);
-            textStock.Size = new Size(anchoCampo, altoInput);
-
-            lblPrecio.Location = new Point(margenIzq + anchoCampo + 10, yStockPrecio);
-            lblPrecio.Size = new Size(anchoCampo, altoLabel);
-            textPV.Location = new Point(margenIzq + anchoCampo + 10, yStockPrecio + altoLabel + 2);
-            textPV.Size = new Size(anchoCampo, altoInput);
-
-            // CATEGORÍA
-            int yCategoria = yStockPrecio + altoLabel + altoInput + espacio + 15;
-            lblCategoria.Location = new Point(margenIzq, yCategoria);
-            lblCategoria.Size = new Size(anchoInput, altoLabel);
-            BoxPrueba.Location = new Point(margenIzq, yCategoria + altoLabel + 2);
-            BoxPrueba.Size = new Size(anchoInput, altoInput);
-
-            // BOTONES — siempre pegados al fondo
-            int yBotones = h - 70;
-            int anchoBtn = (int)((anchoInput - 20) / 3);
-            btnNuevo.Location = new Point(margenIzq, yBotones);
-            btnNuevo.Size = new Size(anchoBtn, 50);
-            btnGuardar.Location = new Point(margenIzq + anchoBtn + 10, yBotones);
-            btnGuardar.Size = new Size(anchoBtn, 50);
-            btnEliminar.Location = new Point(margenIzq + (anchoBtn + 10) * 2, yBotones);
-            btnEliminar.Size = new Size(anchoBtn, 50);
-
-            pnlDetalles.Invalidate();
-        }
-
-
-        //BORDES REDONDOS PARA LOS PANEL, SOLO LO LLAMAMOS EN LOS EVENTOS PAINT DE LOS PANEL, ASÍ SE DIBUJAN LOS BORDES CUANDO SE REDIMENSIONA LA VENTANA
-        private void RedondearPanel(Panel p, PaintEventArgs e, int radio)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            GraphicsPath path = new GraphicsPath();
-
-            // Dibujamos el camino de las esquinas
-            path.AddArc(0, 0, radio, radio, 180, 90);
-            path.AddArc(p.Width - radio, 0, radio, radio, 270, 90);
-            path.AddArc(p.Width - radio, p.Height - radio, radio, radio, 0, 90);
-            path.AddArc(0, p.Height - radio, radio, radio, 90, 90);
-            path.CloseAllFigures();
-
-            // Aplicamos la forma al panel para que sea "físicamente" redondo
-            p.Region = new Region(path);
-
-            // Dibuja un borde sutil con el verde #A4D1A5 de tu paleta Fruit Salad
-            // Esto hace que el cuadro resalte sobre el fondo verde oscuro
-            using (Pen pen = new Pen(ColorTranslator.FromHtml("#A4D1A5"), 2))
-            {
-                e.Graphics.DrawPath(pen, path);
-            }
-        }
-        private void RedondearBoton(Button btn, PaintEventArgs e, int radio)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; // Hace que el borde se vea suave
-
-            using (GraphicsPath path = new GraphicsPath())
-            {
-                path.AddArc(0, 0, radio, radio, 180, 90);
-                path.AddArc(btn.Width - radio, 0, radio, radio, 270, 90);
-                path.AddArc(btn.Width - radio, btn.Height - radio, radio, radio, 0, 90);
-                path.AddArc(0, btn.Height - radio, radio, radio, 90, 90);
-                path.CloseAllFigures();
-
-                // Aplicamos la región redondeada al botón
-                btn.Region = new Region(path);
-            }
-        }
-        private void pnlDetalles_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearPanel((Panel)sender, e, 15);
-        }
-        private void pnlBD_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearPanel((Panel)sender, e, 15);
-        }
-        private void btnGuardarBD_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnBuscar, e, 15);
-        }
-        private void btnNuevo_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnNuevo, e, 15);
-        }
-        private void btnGuardar_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnGuardar, e, 15);
-        }
-        private void btnEliminar_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnEliminar, e, 15);
-        }
     }
+
 }
-
-

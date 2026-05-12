@@ -104,7 +104,7 @@
             cbColonia.Items.AddRange(new object[] { "Activo", "Inactivo" });
             cbColonia.Location = new Point(297, 50);
             cbColonia.Name = "cbColonia";
-            cbColonia.Size = new Size(142, 23);
+            cbColonia.Size = new Size(142, 28);
             cbColonia.TabIndex = 59;
             // 
             // cbTablas
@@ -115,7 +115,7 @@
             cbTablas.Items.AddRange(new object[] { "Activo", "Inactivo" });
             cbTablas.Location = new Point(67, 50);
             cbTablas.Name = "cbTablas";
-            cbTablas.Size = new Size(118, 23);
+            cbTablas.Size = new Size(118, 28);
             cbTablas.TabIndex = 57;
             // 
             // btnBuscarC
@@ -143,7 +143,7 @@
             textBuscarC.ForeColor = Color.DimGray;
             textBuscarC.Location = new Point(127, 8);
             textBuscarC.Name = "textBuscarC";
-            textBuscarC.Size = new Size(142, 27);
+            textBuscarC.Size = new Size(142, 32);
             textBuscarC.TabIndex = 54;
             textBuscarC.Text = "Cliente...";
             // 
@@ -153,7 +153,7 @@
             lblBuscarC.Font = new Font("Century Gothic", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblBuscarC.Location = new Point(16, 11);
             lblBuscarC.Name = "lblBuscarC";
-            lblBuscarC.Size = new Size(95, 22);
+            lblBuscarC.Size = new Size(120, 27);
             lblBuscarC.TabIndex = 53;
             lblBuscarC.Text = "B.Cliente:";
             // 
@@ -251,7 +251,7 @@
             textDIreccion.ForeColor = Color.DimGray;
             textDIreccion.Location = new Point(84, 360);
             textDIreccion.Name = "textDIreccion";
-            textDIreccion.Size = new Size(300, 27);
+            textDIreccion.Size = new Size(300, 32);
             textDIreccion.TabIndex = 49;
             textDIreccion.Text = "Calle 33 & Calle 96 y Calle 98";
             textDIreccion.Enter += textDIreccion_Enter;
@@ -264,7 +264,7 @@
             lblDireccion.ForeColor = Color.FromArgb(59, 109, 17);
             lblDireccion.Location = new Point(82, 334);
             lblDireccion.Name = "lblDireccion";
-            lblDireccion.Size = new Size(83, 21);
+            lblDireccion.Size = new Size(101, 23);
             lblDireccion.TabIndex = 48;
             lblDireccion.Text = "Direccion";
             // 
@@ -275,7 +275,7 @@
             textApodo.ForeColor = Color.DimGray;
             textApodo.Location = new Point(82, 298);
             textApodo.Name = "textApodo";
-            textApodo.Size = new Size(300, 27);
+            textApodo.Size = new Size(300, 32);
             textApodo.TabIndex = 47;
             textApodo.Text = "Apodo...";
             textApodo.Enter += textApodo_Enter;
@@ -288,7 +288,7 @@
             lblApodo.ForeColor = Color.FromArgb(59, 109, 17);
             lblApodo.Location = new Point(80, 272);
             lblApodo.Name = "lblApodo";
-            lblApodo.Size = new Size(150, 21);
+            lblApodo.Size = new Size(189, 23);
             lblApodo.TabIndex = 46;
             lblApodo.Text = "Apodo del cliente";
             // 
@@ -299,7 +299,7 @@
             textApellido.ForeColor = Color.DimGray;
             textApellido.Location = new Point(80, 231);
             textApellido.Name = "textApellido";
-            textApellido.Size = new Size(300, 27);
+            textApellido.Size = new Size(300, 32);
             textApellido.TabIndex = 45;
             textApellido.Text = "Apellido...";
             textApellido.Enter += textApellido_Enter;
@@ -312,7 +312,7 @@
             lblApellido.ForeColor = Color.FromArgb(59, 109, 17);
             lblApellido.Location = new Point(78, 205);
             lblApellido.Name = "lblApellido";
-            lblApellido.Size = new Size(159, 21);
+            lblApellido.Size = new Size(202, 23);
             lblApellido.TabIndex = 44;
             lblApellido.Text = "Apellido del cliente";
             // 
@@ -323,7 +323,7 @@
             textNombre.ForeColor = Color.DimGray;
             textNombre.Location = new Point(78, 167);
             textNombre.Name = "textNombre";
-            textNombre.Size = new Size(300, 27);
+            textNombre.Size = new Size(300, 32);
             textNombre.TabIndex = 43;
             textNombre.Text = "Cliente...";
             textNombre.Enter += textNombre_Enter;
@@ -336,7 +336,7 @@
             lblNombre.ForeColor = Color.FromArgb(59, 109, 17);
             lblNombre.Location = new Point(76, 141);
             lblNombre.Name = "lblNombre";
-            lblNombre.Size = new Size(158, 21);
+            lblNombre.Size = new Size(200, 23);
             lblNombre.TabIndex = 42;
             lblNombre.Text = "Nombre del cliente";
             // 
@@ -347,9 +347,10 @@
             textNumero.ForeColor = Color.DimGray;
             textNumero.Location = new Point(76, 104);
             textNumero.Name = "textNumero";
-            textNumero.Size = new Size(300, 27);
+            textNumero.Size = new Size(300, 32);
             textNumero.TabIndex = 41;
             textNumero.Text = "9991234567";
+            textNumero.TextChanged += textNumero_TextChanged;
             textNumero.Enter += textNumero_Enter;
             textNumero.Leave += textNumero_Leave;
             // 
@@ -360,7 +361,7 @@
             lblNumero.ForeColor = Color.FromArgb(59, 109, 17);
             lblNumero.Location = new Point(74, 78);
             lblNumero.Name = "lblNumero";
-            lblNumero.Size = new Size(154, 21);
+            lblNumero.Size = new Size(192, 23);
             lblNumero.TabIndex = 40;
             lblNumero.Text = "Numero telefonico";
             // 
@@ -370,7 +371,7 @@
             lblTituloForm.Font = new Font("Franklin Gothic Medium Cond", 28.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblTituloForm.Location = new Point(17, 11);
             lblTituloForm.Name = "lblTituloForm";
-            lblTituloForm.Size = new Size(131, 44);
+            lblTituloForm.Size = new Size(163, 54);
             lblTituloForm.TabIndex = 0;
             lblTituloForm.Text = "Clientes";
             // 

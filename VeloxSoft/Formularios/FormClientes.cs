@@ -29,6 +29,8 @@ namespace VeloxSoft.Formularios
             pnlFormulario_Resize(this, EventArgs.Empty);
             InicializarFormulariosBD();
             InicializarFiltros();
+            // Evita el efecto de "congelado" o parpadeo
+            this.DoubleBuffered = true;
 
         }
 
@@ -822,6 +824,11 @@ namespace VeloxSoft.Formularios
             {
                 pnlMiniFormulario.Visible = false;
             }
+        }
+
+        private void textNumero_TextChanged(object sender, EventArgs e)
+        {
+
         }
 
 
