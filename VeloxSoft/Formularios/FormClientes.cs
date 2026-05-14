@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 using System.Windows.Forms;
+using VeloxSoft.Models;
+using VeloxSoft.Services;
 
 namespace VeloxSoft.Formularios
 {
@@ -18,22 +20,136 @@ namespace VeloxSoft.Formularios
         private bool moviendoMiniFormulario = false;
         private Point puntoInicioMouse;
         private Point puntoInicioPanel;
-
-        public FormClientes()
+        private readonly ServicioClientes _ServicioClientes;
+        public FormClientes(ServicioClientes servicioClientes)
         {
+
             InitializeComponent();
             CrearMiniFormulario();
-            btnBuscarF.Click += btnBuscarF_Click;
+            btnAgregar.Click += btnAgregar_Click;
             this.DoubleBuffered = true;
-            pnlClientes_Resize(this, EventArgs.Empty);
+
             pnlFormulario_Resize(this, EventArgs.Empty);
             InicializarFormulariosBD();
             InicializarFiltros();
             // Evita el efecto de "congelado" o parpadeo
             this.DoubleBuffered = true;
-
+            _ServicioClientes = servicioClientes;
         }
 
+        //LÓGICA (GIL)
+        private void FormClientes_Load(object sender, EventArgs e) //cuando se carga el formulario, se llama a este método para cargar los clientes en el DataGridView
+        {
+            var lista = _ServicioClientes.Ver_Clientes(out string errorMessage); //obtiene la lista de clientes desde el servicio, y también un mensaje de error si ocurre algo
+
+            if (!string.IsNullOrEmpty(errorMessage)) //si hay un mensaje de error, se muestra en un MessageBox y no se carga nada en el DataGridViewf
+            {
+                MessageBox.Show(errorMessage);
+                return;
+            }
+            _formTablaClientes?.CargarClientes(lista);
+            CargarDirecciones();
+        }
+
+        private void LimpiarMiniFormulario()
+        {
+            if (pnlMiniFormulario == null) return;
+
+            // Limpiar campos de dirección
+            (pnlMiniFormulario.Controls["txtNumeroCasa"] as TextBox)!.Text = "";
+            (pnlMiniFormulario.Controls["txtCalle"] as TextBox)!.Text = "";
+            (pnlMiniFormulario.Controls["txtCruzamiento"] as TextBox)!.Text = "";
+            (pnlMiniFormulario.Controls["txtReferencia"] as TextBox)!.Text = "";
+            (pnlMiniFormulario.Controls["cbColonia"] as ComboBox)!.SelectedIndex = -1;
+
+            // Limpiar labels de mensaje
+            (pnlMiniFormulario.Controls["lblMsgColonia"] as Label)!.Text = "";
+            (pnlMiniFormulario.Controls["lblMsgDireccion"] as Label)!.Text = "";
+
+            // Ocultar panel de nueva colonia si estaba abierto
+            (pnlMiniFormulario.Controls["pnlNuevaColonia"] as Panel)!.Visible = false;
+        }
+
+
+        //Sanitizado - Validación de los campos de texto para evitar caracteres no deseados y limitar la longitud
+        private void textNumero_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Back) return;
+
+            if (!char.IsDigit(e.KeyChar))
+                e.Handled = true;
+
+            if (textNumero.Text.Length >= 10)
+                e.Handled = true;
+        }
+
+        private void textNombre_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Back) return;
+
+            if (!char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+                e.Handled = true;
+
+            if (textNombre.Text.Length >= 50)
+                e.Handled = true;
+        }
+
+        private void textApellido_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Back) return;
+
+            if (!char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+                e.Handled = true;
+
+            if (textApellido.Text.Length >= 50)
+                e.Handled = true;
+        }
+
+        private void textApodo_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Back) return;
+
+            if (!char.IsLetterOrDigit(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+                e.Handled = true;
+
+            if (textApodo.Text.Length >= 30)
+                e.Handled = true;
+        }
+
+        //fin de sanitización y validacion.
+
+        //método para cargar direcciones en el combobox
+
+        private void CargarDirecciones()
+        {
+            var lista = _ServicioClientes.Ver_Direcciones(out string errorMessage);
+
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                MessageBox.Show(errorMessage);
+                return;
+            }
+
+            textDIreccion.Items.Clear();
+            foreach (var dir in lista)
+                textDIreccion.Items.Add(dir);
+
+            textDIreccion.SelectedIndex = -1;
+        }
+
+        private void CargarColonias(ComboBox cb)
+        {
+            var lista = _ServicioClientes.Ver_Colonias(out string errorMessage);
+            if (!string.IsNullOrEmpty(errorMessage)) { MessageBox.Show(errorMessage); return; }
+
+            cb.Items.Clear();
+            foreach (var colonia in lista)
+                cb.Items.Add(colonia);
+
+            cb.SelectedIndex = -1;
+        }
+
+        //DISEÑO ARMANDO
 
         private void CrearMiniFormulario()
         {
@@ -41,7 +157,7 @@ namespace VeloxSoft.Formularios
             btnCerrarMiniFormulario = new Button();
 
             pnlMiniFormulario.Name = "pnlMiniFormulario";
-            pnlMiniFormulario.Size = new Size(420, 390);
+            pnlMiniFormulario.Size = new Size(420, 430);
             pnlMiniFormulario.BackColor = Color.White;
             pnlMiniFormulario.BorderStyle = BorderStyle.None;
             pnlMiniFormulario.Visible = false;
@@ -56,32 +172,27 @@ namespace VeloxSoft.Formularios
             pnlBarraMiniFormulario.Height = 36;
             pnlBarraMiniFormulario.Dock = DockStyle.Top;
             pnlBarraMiniFormulario.BackColor = Color.FromArgb(234, 243, 222);
-
             pnlBarraMiniFormulario.MouseDown += pnlMiniFormulario_MouseDown;
             pnlBarraMiniFormulario.MouseMove += pnlMiniFormulario_MouseMove;
             pnlBarraMiniFormulario.MouseUp += pnlMiniFormulario_MouseUp;
 
             Label lblTituloMini = new Label();
             lblTituloMini.AutoSize = true;
-            lblTituloMini.Text = "Editar dirección";
+            lblTituloMini.Text = "Agregar dirección";
             lblTituloMini.Font = new Font("Century Gothic", 11F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTituloMini.ForeColor = Color.FromArgb(59, 109, 17);
             lblTituloMini.Location = new Point(12, 8);
-
-            // para que también se pueda arrastrar al tocar el título
             lblTituloMini.MouseDown += pnlMiniFormulario_MouseDown;
             lblTituloMini.MouseMove += pnlMiniFormulario_MouseMove;
             lblTituloMini.MouseUp += pnlMiniFormulario_MouseUp;
-
             pnlBarraMiniFormulario.Controls.Add(lblTituloMini);
-
             pnlMiniFormulario.Controls.Add(pnlBarraMiniFormulario);
 
             Font fuente = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Color colorLabel = Color.FromArgb(59, 109, 17);
             Color colorInput = Color.FromArgb(250, 254, 247);
 
-            // Número de casa
+            // ── Número de casa ──
             Label lblNumeroCasa = new Label();
             lblNumeroCasa.AutoSize = true;
             lblNumeroCasa.Font = fuente;
@@ -93,12 +204,11 @@ namespace VeloxSoft.Formularios
             TextBox txtNumeroCasa = new TextBox();
             txtNumeroCasa.BackColor = colorInput;
             txtNumeroCasa.Font = fuente;
-            txtNumeroCasa.ForeColor = Color.DimGray;
             txtNumeroCasa.Location = new Point(20, 80);
             txtNumeroCasa.Name = "txtNumeroCasa";
             txtNumeroCasa.Size = new Size(150, 32);
 
-            // Calle
+            // ── Calle ──
             Label lblCalle = new Label();
             lblCalle.AutoSize = true;
             lblCalle.Font = fuente;
@@ -110,12 +220,11 @@ namespace VeloxSoft.Formularios
             TextBox txtCalle = new TextBox();
             txtCalle.BackColor = colorInput;
             txtCalle.Font = fuente;
-            txtCalle.ForeColor = Color.DimGray;
             txtCalle.Location = new Point(200, 80);
             txtCalle.Name = "txtCalle";
             txtCalle.Size = new Size(180, 32);
 
-            // Cruzamiento
+            // ── Cruzamiento ──
             Label lblCruzamiento = new Label();
             lblCruzamiento.AutoSize = true;
             lblCruzamiento.Font = fuente;
@@ -127,12 +236,11 @@ namespace VeloxSoft.Formularios
             TextBox txtCruzamiento = new TextBox();
             txtCruzamiento.BackColor = colorInput;
             txtCruzamiento.Font = fuente;
-            txtCruzamiento.ForeColor = Color.DimGray;
             txtCruzamiento.Location = new Point(20, 150);
             txtCruzamiento.Name = "txtCruzamiento";
             txtCruzamiento.Size = new Size(170, 32);
 
-            // Referencia
+            // ── Referencia ──
             Label lblReferencia = new Label();
             lblReferencia.AutoSize = true;
             lblReferencia.Font = fuente;
@@ -144,12 +252,11 @@ namespace VeloxSoft.Formularios
             TextBox txtReferencia = new TextBox();
             txtReferencia.BackColor = colorInput;
             txtReferencia.Font = fuente;
-            txtReferencia.ForeColor = Color.DimGray;
             txtReferencia.Location = new Point(210, 150);
             txtReferencia.Name = "txtReferencia";
             txtReferencia.Size = new Size(170, 32);
 
-            // Colonia
+            // ── Colonia ──
             Label lblColonia = new Label();
             lblColonia.AutoSize = true;
             lblColonia.Font = fuente;
@@ -163,80 +270,213 @@ namespace VeloxSoft.Formularios
             cbColonia.Font = fuente;
             cbColonia.Location = new Point(20, 220);
             cbColonia.Name = "cbColonia";
-            cbColonia.Size = new Size(220, 31);
+            cbColonia.Size = new Size(330, 31);
             cbColonia.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // Dirección
-            Label lblDireccionCompleta = new Label();
-            lblDireccionCompleta.AutoSize = true;
-            lblDireccionCompleta.Font = fuente;
-            lblDireccionCompleta.ForeColor = colorLabel;
-            lblDireccionCompleta.Location = new Point(20, 265);
-            lblDireccionCompleta.Name = "lblDireccionCompleta";
-            lblDireccionCompleta.Text = "Dirección";
+            Button btnAgregarColonia = new Button();
+            btnAgregarColonia.BackColor = Color.FromArgb(59, 109, 17);
+            btnAgregarColonia.FlatAppearance.BorderSize = 0;
+            btnAgregarColonia.FlatStyle = FlatStyle.Flat;
+            btnAgregarColonia.ForeColor = Color.White;
+            btnAgregarColonia.Font = new Font("Century Gothic", 16F, FontStyle.Bold);
+            btnAgregarColonia.Location = new Point(358, 218);
+            btnAgregarColonia.Name = "btnAgregarColonia";
+            btnAgregarColonia.Size = new Size(36, 34);
+            btnAgregarColonia.Text = "+";
+            btnAgregarColonia.UseVisualStyleBackColor = false;
 
-            TextBox txtDireccionCompleta = new TextBox();
-            txtDireccionCompleta.BackColor = colorInput;
-            txtDireccionCompleta.Font = fuente;
-            txtDireccionCompleta.ForeColor = Color.DimGray;
-            txtDireccionCompleta.Location = new Point(20, 290);
-            txtDireccionCompleta.Name = "txtDireccionCompleta";
-            txtDireccionCompleta.Size = new Size(250, 32);
+            // ── Label mensaje colonia ──
+            Label lblMsgColonia = new Label();
+            lblMsgColonia.Name = "lblMsgColonia";
+            lblMsgColonia.AutoSize = false;
+            lblMsgColonia.Size = new Size(374, 20);
+            lblMsgColonia.Location = new Point(20, 258);
+            lblMsgColonia.Font = new Font("Century Gothic", 9F);
+            lblMsgColonia.TextAlign = ContentAlignment.MiddleLeft;
+            lblMsgColonia.Text = "";
 
-            // Botón guardar
+            // ── Panel nueva colonia (oculto) ──
+            Panel pnlNuevaColonia = new Panel();
+            pnlNuevaColonia.Name = "pnlNuevaColonia";
+            pnlNuevaColonia.BackColor = Color.FromArgb(234, 243, 222);
+            pnlNuevaColonia.Location = new Point(20, 280);
+            pnlNuevaColonia.Size = new Size(374, 44);
+            pnlNuevaColonia.Visible = false;
+
+            TextBox txtNuevaColonia = new TextBox();
+            txtNuevaColonia.BackColor = colorInput;
+            txtNuevaColonia.Font = fuente;
+            txtNuevaColonia.Location = new Point(4, 6);
+            txtNuevaColonia.Name = "txtNuevaColonia";
+            txtNuevaColonia.Size = new Size(240, 32);
+
+            Button btnGuardarColonia = new Button();
+            btnGuardarColonia.BackColor = Color.FromArgb(59, 109, 17);
+            btnGuardarColonia.FlatAppearance.BorderSize = 0;
+            btnGuardarColonia.FlatStyle = FlatStyle.Flat;
+            btnGuardarColonia.ForeColor = Color.White;
+            btnGuardarColonia.Font = fuente;
+            btnGuardarColonia.Location = new Point(252, 4);
+            btnGuardarColonia.Size = new Size(118, 36);
+            btnGuardarColonia.Text = "Guardar";
+            btnGuardarColonia.UseVisualStyleBackColor = false;
+
+
+            pnlNuevaColonia.Controls.Add(txtNuevaColonia);
+            pnlNuevaColonia.Controls.Add(btnGuardarColonia);
+
+            // ── Label mensaje dirección ──
+            Label lblMsgDireccion = new Label();
+            lblMsgDireccion.Name = "lblMsgDireccion";
+            lblMsgDireccion.AutoSize = false;
+            lblMsgDireccion.Size = new Size(374, 20);
+            lblMsgDireccion.Location = new Point(20, 340);
+            lblMsgDireccion.Font = new Font("Century Gothic", 9F);
+            lblMsgDireccion.TextAlign = ContentAlignment.MiddleLeft;
+            lblMsgDireccion.Text = "";
+
+            // ── Botón guardar dirección ──
             Button btnGuardarMini = new Button();
             btnGuardarMini.BackColor = Color.FromArgb(59, 109, 17);
             btnGuardarMini.FlatAppearance.BorderSize = 0;
             btnGuardarMini.FlatStyle = FlatStyle.Flat;
             btnGuardarMini.ForeColor = Color.White;
             btnGuardarMini.Font = fuente;
-            btnGuardarMini.Location = new Point(285, 288);
+            btnGuardarMini.Location = new Point((pnlMiniFormulario.Width - 160) / 2, 365);
             btnGuardarMini.Name = "btnGuardarMini";
-            btnGuardarMini.Size = new Size(100, 36);
-            btnGuardarMini.Text = "Guardar";
+            btnGuardarMini.Size = new Size(160, 40);
+            btnGuardarMini.Text = "Guardar dirección";
             btnGuardarMini.UseVisualStyleBackColor = false;
 
-            // Agregar controles
+            // ── Eventos ──
+            btnAgregarColonia.Click += (s, e) =>
+            {
+                lblMsgColonia.Text = "";
+                lblMsgColonia.Visible = false;
+                pnlNuevaColonia.Visible = true;
+                txtNuevaColonia.Text = "";
+                txtNuevaColonia.Focus();
+            };
+
+            btnGuardarColonia.Click += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(txtNuevaColonia.Text))
+                {
+                    lblMsgColonia.Text = "Escribe el nombre de la colonia.";
+                    lblMsgColonia.ForeColor = Color.Red;
+                    return;
+                }
+
+                string mensaje = _ServicioClientes.Insertar_Colonia(
+                    txtNuevaColonia.Text.Trim(), out string errorMessage);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    lblMsgColonia.Text = errorMessage;
+                    lblMsgColonia.ForeColor = Color.Red;
+                    return;
+                }
+
+                string nuevaColonia = txtNuevaColonia.Text.Trim();
+                CargarColonias(cbColonia);
+
+                for (int i = 0; i < cbColonia.Items.Count; i++)
+                {
+                    if (cbColonia.Items[i].ToString() == nuevaColonia)
+                    {
+                        cbColonia.SelectedIndex = i;
+                        break;
+                    }
+                }
+
+                pnlNuevaColonia.Visible = false;
+                txtNuevaColonia.Text = "";
+                lblMsgColonia.Text = mensaje;
+                lblMsgColonia.ForeColor = Color.Green;
+            };
+
+            btnGuardarMini.Click += (s, e) =>
+            {
+                // 1. Validar campos obligatorios
+                if (string.IsNullOrWhiteSpace(txtNumeroCasa.Text) ||
+                    string.IsNullOrWhiteSpace(txtCalle.Text) ||
+                    string.IsNullOrWhiteSpace(txtCruzamiento.Text))
+                {
+                    lblMsgDireccion.Text = "Número de casa, calle y cruzamiento son obligatorios.";
+                    lblMsgDireccion.ForeColor = Color.Red;
+                    return;
+                }
+
+                // 2. Validar que haya colonia seleccionada
+                if (cbColonia.SelectedItem == null)
+                {
+                    lblMsgDireccion.Text = "Selecciona una colonia.";
+                    lblMsgDireccion.ForeColor = Color.Red;
+                    return;
+                }
+
+                // 3. Obtener el ID de la colonia seleccionada
+                ColoniaItem coloniaSeleccionada = (ColoniaItem)cbColonia.SelectedItem;
+
+                // 4. Llamar al servicio
+                string mensaje = _ServicioClientes.Insertar_Direccion(
+                    txtNumeroCasa.Text.Trim(),
+                    txtCalle.Text.Trim(),
+                    txtCruzamiento.Text.Trim(),
+                    txtReferencia.Text.Trim(),
+                    coloniaSeleccionada.Id,
+                    out string errorMessage);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    lblMsgDireccion.Text = errorMessage;
+                    lblMsgDireccion.ForeColor = Color.Red;
+                    return;
+                }
+
+                // 5. Éxito — recargar el ComboBox de direcciones y cerrar el mini formulario
+                lblMsgDireccion.Text = mensaje;
+                lblMsgDireccion.ForeColor = Color.Green;
+                CargarDirecciones();
+                LimpiarMiniFormulario();
+                pnlMiniFormulario.Visible = false;
+            };
+
+            // ── Agregar controles en orden correcto ──
             pnlMiniFormulario.Controls.Add(lblNumeroCasa);
             pnlMiniFormulario.Controls.Add(txtNumeroCasa);
-
             pnlMiniFormulario.Controls.Add(lblCalle);
             pnlMiniFormulario.Controls.Add(txtCalle);
-
             pnlMiniFormulario.Controls.Add(lblCruzamiento);
             pnlMiniFormulario.Controls.Add(txtCruzamiento);
-
             pnlMiniFormulario.Controls.Add(lblReferencia);
             pnlMiniFormulario.Controls.Add(txtReferencia);
-
             pnlMiniFormulario.Controls.Add(lblColonia);
             pnlMiniFormulario.Controls.Add(cbColonia);
+            pnlMiniFormulario.Controls.Add(btnAgregarColonia);
+            pnlMiniFormulario.Controls.Add(lblMsgColonia);
+            pnlMiniFormulario.Controls.Add(pnlNuevaColonia); // El panel de la colonia va "atrás"
+            pnlMiniFormulario.Controls.Add(lblMsgDireccion);
+            pnlMiniFormulario.Controls.Add(btnGuardarMini);  // El botón principal va "al frente" de todo
 
-            pnlMiniFormulario.Controls.Add(lblDireccionCompleta);
-            pnlMiniFormulario.Controls.Add(txtDireccionCompleta);
 
-            pnlMiniFormulario.Controls.Add(btnGuardarMini);
 
-            // Botón cerrar
+
+            // ── Botón cerrar ──
             btnCerrarMiniFormulario.Text = "X";
             btnCerrarMiniFormulario.Size = new Size(30, 26);
-            btnCerrarMiniFormulario.Location = new Point(
-                pnlMiniFormulario.Width - 40,
-                5
-            );
-
+            btnCerrarMiniFormulario.Location = new Point(pnlMiniFormulario.Width - 40, 5);
             btnCerrarMiniFormulario.FlatStyle = FlatStyle.Flat;
             btnCerrarMiniFormulario.FlatAppearance.BorderSize = 0;
             btnCerrarMiniFormulario.BackColor = Color.FromArgb(163, 45, 45);
             btnCerrarMiniFormulario.ForeColor = Color.White;
-
             btnCerrarMiniFormulario.Click += btnCerrarMiniFormulario_Click;
-
             pnlBarraMiniFormulario.Controls.Add(btnCerrarMiniFormulario);
 
             this.Controls.Add(pnlMiniFormulario);
             pnlMiniFormulario.BringToFront();
         }
+
 
         //Diseño estetico de esteticos y botonoes
 
@@ -638,8 +878,8 @@ namespace VeloxSoft.Formularios
             textDIreccion.Location = new Point(margen, yDireccion + altoLabel + 2);
             textDIreccion.Size = new Size(anchoInput - anchoBuscar - espacioBuscar, altoInput);
 
-            btnBuscarF.Location = new Point(textDIreccion.Right + espacioBuscar, textDIreccion.Top);
-            btnBuscarF.Size = new Size(anchoBuscar, altoInput);
+            btnAgregar.Location = new Point(textDIreccion.Right + espacioBuscar, textDIreccion.Top);
+            btnAgregar.Size = new Size(anchoBuscar, altoInput);
 
             // BOTONES — pegados al fondo
             int altoBotones = 48;
@@ -707,7 +947,7 @@ namespace VeloxSoft.Formularios
 
         private void btnBuscarF_Paint(object sender, PaintEventArgs e)
         {
-            RedondearBoton(btnBuscarF, e, 5);
+            RedondearBoton(btnAgregar, e, 5);
         }
 
         //Fin de redibujar los botones con bordes redondeados cada vez que se pinta
@@ -715,104 +955,15 @@ namespace VeloxSoft.Formularios
         //Diseño de los textbox para que tengan un texto de ejemplo y se borre al hacer click, y vuelva a aparecer si no se escribe nada
 
         //Numero
-        private void textNumero_Leave(object sender, EventArgs e)
-        {
-            if (textNumero.Text == "")
-            {
-                textNumero.Text = "9991234567";
-                textNumero.ForeColor = Color.DarkGray;
-            }
-        }
 
-        private void textNumero_Enter(object sender, EventArgs e)
-        {
-            if (textNumero.Text == "9991234567")
-            {
-                textNumero.Text = "";
-                textNumero.ForeColor = Color.Black;
-            }
-        }
 
-        //Nombre
-        private void textNombre_Enter(object sender, EventArgs e)
-        {
-            if (textNombre.Text == "Cliente...")
-            {
-                textNombre.Text = "";
-                textNombre.ForeColor = Color.Black;
-            }
-        }
-
-        private void textNombre_Leave(object sender, EventArgs e)
-        {
-            if (textNombre.Text == "")
-            {
-                textNombre.Text = "Cliente...";
-                textNombre.ForeColor = Color.DarkGray;
-            }
-        }
-
-        //Apellido
-        private void textApellido_Enter(object sender, EventArgs e)
-        {
-            if (textApellido.Text == "Apellido...")
-            {
-                textApellido.Text = "";
-                textApellido.ForeColor = Color.Black;
-            }
-        }
-
-        private void textApellido_Leave(object sender, EventArgs e)
-        {
-            if (textApellido.Text == "")
-            {
-                textApellido.Text = "Apellido...";
-                textApellido.ForeColor = Color.DarkGray;
-            }
-        }
-
-        //Apodo
-        private void textApodo_Enter(object sender, EventArgs e)
-        {
-            if (textApodo.Text == "Apodo...")
-            {
-                textApodo.Text = "";
-                textApodo.ForeColor = Color.Black;
-            }
-        }
-
-        private void textApodo_Leave(object sender, EventArgs e)
-        {
-            if (textApodo.Text == "")
-            {
-                textApodo.Text = "Apodo...";
-                textApodo.ForeColor = Color.DarkGray;
-            }
-        }
-
-        //Direccion
-        private void textDIreccion_Enter(object sender, EventArgs e)
-        {
-            if (textDIreccion.Text == "Calle 33 & Calle 96 y Calle 98")
-            {
-                textDIreccion.Text = "";
-                textDIreccion.ForeColor = Color.Black;
-            }
-        }
-
-        private void textDIreccion_Leave(object sender, EventArgs e)
-        {
-            if (textDIreccion.Text == "")
-            {
-                textDIreccion.Text = "Calle 33 & Calle 96 y Calle 98";
-                textDIreccion.ForeColor = Color.DarkGray;
-            }
-        }
-
-        private void btnBuscarF_Click(object? sender, EventArgs e)
+        private void btnAgregar_Click(object? sender, EventArgs e)
         {
             if (pnlMiniFormulario != null)
             {
+                ComboBox? cb = pnlMiniFormulario.Controls["cbColonia"] as ComboBox;
+                if (cb != null) CargarColonias(cb);
+
                 pnlMiniFormulario.Visible = true;
                 pnlMiniFormulario.BringToFront();
             }
@@ -823,6 +974,14 @@ namespace VeloxSoft.Formularios
             if (pnlMiniFormulario != null)
             {
                 pnlMiniFormulario.Visible = false;
+            }
+        }
+
+        private void textDIreccion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (textDIreccion.SelectedItem is DireccionItem seleccionada)
+            {
+                MessageBox.Show($"ID: {seleccionada.Id}\nTexto: {seleccionada.Texto}");
             }
         }
 

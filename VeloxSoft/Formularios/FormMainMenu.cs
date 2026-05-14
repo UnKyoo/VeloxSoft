@@ -14,6 +14,7 @@ namespace VeloxSoft
         private System.Windows.Forms.Timer _TimerActividad;
         private readonly ServicioInventario _ServicioInventario;
         private readonly ServicioUsuarios _ServicioUsuarios;
+        private readonly ServicioClientes _ServicioClientes;
         // Fields
         private IconButton currentBtn;
         private Panel leftBorderBtn;
@@ -22,11 +23,12 @@ namespace VeloxSoft
 
 
         // Constructor
-        public FormMainMenu(ServicioInventario ServicioInventario, ServicioUsuarios ServicioUsuarios)
+        public FormMainMenu(ServicioInventario ServicioInventario, ServicioUsuarios ServicioUsuarios, ServicioClientes ServicioClientes)
         {
             //Instancias de servicios
             _ServicioInventario = ServicioInventario;
             _ServicioUsuarios = ServicioUsuarios;
+            _ServicioClientes = ServicioClientes;
             //Fin de Instancias de servicios
             InitializeComponent();
             leftBorderBtn = new Panel();
@@ -130,7 +132,7 @@ namespace VeloxSoft
 
         private void btnClientes_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new FormClientes());
+            OpenChildForm(new FormClientes(_ServicioClientes));
             ActivateButton(sender, RGBColors.color3);
         }
 

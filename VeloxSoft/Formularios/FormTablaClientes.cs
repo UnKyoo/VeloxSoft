@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using VeloxSoft.Models;
 
 namespace VeloxSoft.Formularios
 {
@@ -18,7 +19,26 @@ namespace VeloxSoft.Formularios
                 this.Dock = DockStyle.Fill;
             }
 
-            public DataGridView Tabla => dgvClientes;
+        //LÓGICA (GIL)
+
+        //Método que llama a la lista enviada desde el FormClientes para cargar los datos en el DataGridView
+        public void CargarClientes(List<Cliente> lista) //recibe la lista de clientes desde el FormClientes
+        {
+            dgvClientes.Rows.Clear();
+
+            foreach (var cliente in lista)
+            {
+                dgvClientes.Rows.Add(
+                    cliente.IdCliente,
+                    cliente.Nombre,
+                    cliente.Apellido,
+                    cliente.Apodo,
+                    cliente.Direccion);
+            }
+        }
+ 
+        //DISEÑO (ARMANDO)
+        public DataGridView Tabla => dgvClientes;
 
             public void FiltrarPorNumero(string numero)
             {

@@ -37,11 +37,12 @@
             textBuscarC = new TextBox();
             lblBuscarC = new Label();
             pnlFormulario = new Panel();
-            btnBuscarF = new FontAwesome.Sharp.IconButton();
+            textDIreccion = new ComboBox();
+            label1 = new Label();
+            btnAgregar = new FontAwesome.Sharp.IconButton();
             btnEliminar = new Button();
             btnLimpiar = new Button();
             btnGuardar = new Button();
-            textDIreccion = new TextBox();
             lblDireccion = new Label();
             textApodo = new TextBox();
             lblApodo = new Label();
@@ -143,9 +144,9 @@
             textBuscarC.ForeColor = Color.DimGray;
             textBuscarC.Location = new Point(127, 8);
             textBuscarC.Name = "textBuscarC";
-            textBuscarC.Size = new Size(142, 32);
+            textBuscarC.PlaceholderText = "9993546646";
+            textBuscarC.Size = new Size(142, 27);
             textBuscarC.TabIndex = 54;
-            textBuscarC.Text = "Cliente...";
             // 
             // lblBuscarC
             // 
@@ -153,19 +154,20 @@
             lblBuscarC.Font = new Font("Century Gothic", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblBuscarC.Location = new Point(16, 11);
             lblBuscarC.Name = "lblBuscarC";
-            lblBuscarC.Size = new Size(120, 27);
+            lblBuscarC.Size = new Size(103, 22);
             lblBuscarC.TabIndex = 53;
-            lblBuscarC.Text = "B.Cliente:";
+            lblBuscarC.Text = "ID.Cliente:";
             // 
             // pnlFormulario
             // 
             pnlFormulario.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlFormulario.BackColor = Color.White;
-            pnlFormulario.Controls.Add(btnBuscarF);
+            pnlFormulario.Controls.Add(textDIreccion);
+            pnlFormulario.Controls.Add(label1);
+            pnlFormulario.Controls.Add(btnAgregar);
             pnlFormulario.Controls.Add(btnEliminar);
             pnlFormulario.Controls.Add(btnLimpiar);
             pnlFormulario.Controls.Add(btnGuardar);
-            pnlFormulario.Controls.Add(textDIreccion);
             pnlFormulario.Controls.Add(lblDireccion);
             pnlFormulario.Controls.Add(textApodo);
             pnlFormulario.Controls.Add(lblApodo);
@@ -183,22 +185,42 @@
             pnlFormulario.Paint += pnlFormulario_Paint;
             pnlFormulario.Resize += pnlFormulario_Resize;
             // 
-            // btnBuscarF
+            // textDIreccion
             // 
-            btnBuscarF.BackColor = Color.FromArgb(59, 109, 17);
-            btnBuscarF.FlatAppearance.BorderSize = 0;
-            btnBuscarF.FlatStyle = FlatStyle.Flat;
-            btnBuscarF.IconChar = FontAwesome.Sharp.IconChar.File;
-            btnBuscarF.IconColor = Color.Black;
-            btnBuscarF.IconFont = FontAwesome.Sharp.IconFont.Auto;
-            btnBuscarF.IconSize = 29;
-            btnBuscarF.Location = new Point(391, 360);
-            btnBuscarF.Name = "btnBuscarF";
-            btnBuscarF.Size = new Size(36, 32);
-            btnBuscarF.TabIndex = 54;
-            btnBuscarF.UseVisualStyleBackColor = false;
-            btnBuscarF.Click += btnBuscarF_Click;
-            btnBuscarF.Paint += btnBuscarF_Paint;
+            textDIreccion.DropDownStyle = ComboBoxStyle.DropDownList;
+            textDIreccion.Font = new Font("Century Gothic", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            textDIreccion.FormattingEnabled = true;
+            textDIreccion.Location = new Point(84, 360);
+            textDIreccion.Name = "textDIreccion";
+            textDIreccion.Size = new Size(300, 25);
+            textDIreccion.TabIndex = 56;
+            textDIreccion.SelectedIndexChanged += textDIreccion_SelectedIndexChanged;
+            // 
+            // label1
+            // 
+            label1.Dock = DockStyle.Top;
+            label1.Location = new Point(0, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(584, 20);
+            label1.TabIndex = 55;
+            label1.Text = "LabelError";
+            label1.TextAlign = ContentAlignment.TopCenter;
+            // 
+            // btnAgregar
+            // 
+            btnAgregar.BackColor = Color.FromArgb(59, 109, 17);
+            btnAgregar.FlatAppearance.BorderSize = 0;
+            btnAgregar.FlatStyle = FlatStyle.Flat;
+            btnAgregar.IconChar = FontAwesome.Sharp.IconChar.File;
+            btnAgregar.IconColor = Color.Black;
+            btnAgregar.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            btnAgregar.IconSize = 29;
+            btnAgregar.Location = new Point(391, 360);
+            btnAgregar.Name = "btnAgregar";
+            btnAgregar.Size = new Size(36, 32);
+            btnAgregar.TabIndex = 54;
+            btnAgregar.UseVisualStyleBackColor = false;
+            btnAgregar.Paint += btnBuscarF_Paint;
             // 
             // btnEliminar
             // 
@@ -244,19 +266,6 @@
             btnGuardar.UseVisualStyleBackColor = false;
             btnGuardar.Paint += btnGuardar_Paint;
             // 
-            // textDIreccion
-            // 
-            textDIreccion.BackColor = Color.FromArgb(250, 254, 247);
-            textDIreccion.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textDIreccion.ForeColor = Color.DimGray;
-            textDIreccion.Location = new Point(84, 360);
-            textDIreccion.Name = "textDIreccion";
-            textDIreccion.Size = new Size(300, 32);
-            textDIreccion.TabIndex = 49;
-            textDIreccion.Text = "Calle 33 & Calle 96 y Calle 98";
-            textDIreccion.Enter += textDIreccion_Enter;
-            textDIreccion.Leave += textDIreccion_Leave;
-            // 
             // lblDireccion
             // 
             lblDireccion.AutoSize = true;
@@ -274,12 +283,12 @@
             textApodo.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textApodo.ForeColor = Color.DimGray;
             textApodo.Location = new Point(82, 298);
+            textApodo.MaxLength = 30;
             textApodo.Name = "textApodo";
-            textApodo.Size = new Size(300, 32);
+            textApodo.PlaceholderText = "Apodo...";
+            textApodo.Size = new Size(300, 27);
             textApodo.TabIndex = 47;
-            textApodo.Text = "Apodo...";
-            textApodo.Enter += textApodo_Enter;
-            textApodo.Leave += textApodo_Leave;
+            textApodo.KeyPress += textApodo_KeyPress;
             // 
             // lblApodo
             // 
@@ -298,12 +307,12 @@
             textApellido.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textApellido.ForeColor = Color.DimGray;
             textApellido.Location = new Point(80, 231);
+            textApellido.MaxLength = 50;
             textApellido.Name = "textApellido";
-            textApellido.Size = new Size(300, 32);
+            textApellido.PlaceholderText = "Apellido...";
+            textApellido.Size = new Size(300, 27);
             textApellido.TabIndex = 45;
-            textApellido.Text = "Apellido...";
-            textApellido.Enter += textApellido_Enter;
-            textApellido.Leave += textApellido_Leave;
+            textApellido.KeyPress += textApellido_KeyPress;
             // 
             // lblApellido
             // 
@@ -322,12 +331,12 @@
             textNombre.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textNombre.ForeColor = Color.DimGray;
             textNombre.Location = new Point(78, 167);
+            textNombre.MaxLength = 50;
             textNombre.Name = "textNombre";
-            textNombre.Size = new Size(300, 32);
+            textNombre.PlaceholderText = "Cliente...";
+            textNombre.Size = new Size(300, 27);
             textNombre.TabIndex = 43;
-            textNombre.Text = "Cliente...";
-            textNombre.Enter += textNombre_Enter;
-            textNombre.Leave += textNombre_Leave;
+            textNombre.KeyPress += textNombre_KeyPress;
             // 
             // lblNombre
             // 
@@ -346,13 +355,12 @@
             textNumero.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textNumero.ForeColor = Color.DimGray;
             textNumero.Location = new Point(76, 104);
+            textNumero.MaxLength = 10;
             textNumero.Name = "textNumero";
-            textNumero.Size = new Size(300, 32);
+            textNumero.PlaceholderText = "9993546646";
+            textNumero.Size = new Size(300, 27);
             textNumero.TabIndex = 41;
-            textNumero.Text = "9991234567";
-            textNumero.TextChanged += textNumero_TextChanged;
-            textNumero.Enter += textNumero_Enter;
-            textNumero.Leave += textNumero_Leave;
+            textNumero.KeyPress += textNumero_KeyPress;
             // 
             // lblNumero
             // 
@@ -381,6 +389,7 @@
             Controls.Add(pnlClientes);
             Name = "FormClientes";
             Text = "FormClientes";
+            Load += FormClientes_Load;
             pnlClientes.ResumeLayout(false);
             pnlBotones.ResumeLayout(false);
             pnlBotones.PerformLayout();
@@ -405,7 +414,6 @@
         private Label lblApellido;
         private TextBox textApodo;
         private Label lblApodo;
-        private TextBox textDIreccion;
         private Label lblDireccion;
         private Button btnEliminar;
         private Button btnLimpiar;
@@ -415,6 +423,8 @@
         private FontAwesome.Sharp.IconButton btnBuscarC;
         private TextBox textBuscarC;
         private Label lblBuscarC;
-        private FontAwesome.Sharp.IconButton btnBuscarF;
+        private FontAwesome.Sharp.IconButton btnAgregar;
+        private Label label1;
+        private ComboBox textDIreccion;
     }
 }

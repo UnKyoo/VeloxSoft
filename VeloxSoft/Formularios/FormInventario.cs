@@ -400,7 +400,7 @@ namespace VeloxSoft.Formularios
                 }
                 else if (categoria == "Kilo")
                 {
-                    categoria = "KG";
+                    categoria = "KL";
                 }
 
                 // DEBUG - borrar después
@@ -672,7 +672,7 @@ namespace VeloxSoft.Formularios
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
                 e.Handled = true;
 
-            if (textID.Text.Length >= 4)
+            if (textID.Text.Length <= 4)
             {
                 e.Handled = true;
             }
