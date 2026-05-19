@@ -1,0 +1,45 @@
+CREATE OR REPLACE FUNCTION modificar_cliente(
+    id_cel_p        BIGINT,
+    nuevo_cel_p     BIGINT,
+    apodo_p         CHARACTER VARYING(30),
+    direccion_c_p   INTEGER
+)
+RETURNS TEXT AS $$
+BEGIN
+    -- Validar si el cliente existe
+    IF NOT EXISTS (
+        SELECT 1
+        FROM TBL_CLIENTE c
+        WHERE c.id_cel = id_cel_p
+    ) THEN
+        RETURN 'ERROR|El cliente no existe';
+    END IF;
+
+    -- Validar si el nuevo número ya está en uso (solo si cambió)
+    IF nuevo_cel_p <> id_cel_p AND EXISTS (
+        SELECT 1
+        FROM TBL_CLIENTE c
+        WHERE c.id_cel = nuevo_cel_p
+    ) THEN
+        RETURN 'ERROR|El número de teléfono ya está registrado';
+    END IF;
+
+    -- Validar si la dirección existe
+    IF NOT EXISTS (
+        SELECT 1
+        FROM TBL_DIRECCION d
+        WHERE d.id_direc = direccion_c_p
+    ) THEN
+        RETURN 'ERROR|La dirección no existe';
+    END IF;
+
+    UPDATE TBL_CLIENTE
+    SET
+        id_cel      = nuevo_cel_p,
+        apodo       = apodo_p,
+        direccion_c = direccion_c_p
+    WHERE id_cel = id_cel_p;
+
+    RETURN 'OK|Cliente modificado correctamente';
+END;
+$$ LANGUAGE plpgsql;
