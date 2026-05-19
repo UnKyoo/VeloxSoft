@@ -667,93 +667,179 @@ namespace VeloxSoft.Formularios
         {
             int w = pnlBotones.Width;
             int h = pnlBotones.Height;
-            int margen = 15;
+
+            int margenH = 15;
             int altoControl = 28;
-            int x = margen;
-            bool dosLineas = w < 700;
+
+            int espacioPequeño = 5;
+            int espacioGrande = 20;
+
+            // Labels dinámicos (NO aparecen en el diseñador)
+            Label lblTablas = ObtenerLabel("lblTablas", "Tabla:");
+            Label lblColonia = ObtenerLabel("lblColonia", "Colonia:");
+
+            // Cambia a 2 líneas cuando el panel se hace pequeño
+            bool dosLineas = w < 750;
 
             if (!dosLineas)
             {
-                // ── UNA LÍNEA ──
+                // ───────────── UNA LÍNEA ─────────────
                 int y = (h - altoControl) / 2;
 
-                int anchoLbl = 85;
-                int anchoBuscar = (int)(w * 0.18);
-                int anchoBtn = 42;
-                int anchoTablas = (int)(w * 0.14);
-                int anchoColonia = (int)(w * 0.16);
+                // Tamaños fijos
+                int anchoLblBuscar = lblBuscarC.PreferredWidth;
+                int anchoBtnBuscar = 35;
 
-                // BUSCAR CLIENTE
-                lblBuscarC.Location = new Point(x, y + 4);
-                lblBuscarC.Size = new Size(anchoLbl, 20);
-                x += anchoLbl + 4;
+                int anchoLblTabla = lblTablas.PreferredWidth;
+                int anchoLblColonia = lblColonia.PreferredWidth;
 
-                textBuscarC.Location = new Point(x, y);
+                // Espacio restante
+                int espacioDisponible =
+                    w
+                    - (margenH * 2)
+                    - anchoLblBuscar
+                    - anchoBtnBuscar
+                    - anchoLblTabla
+                    - anchoLblColonia
+                    - (espacioPequeño * 5)
+                    - (espacioGrande * 2);
+
+                // Repartir espacio
+                int anchoBuscar = (int)(espacioDisponible * 0.35);
+                int anchoTabla = (int)(espacioDisponible * 0.22);
+                int anchoColonia = espacioDisponible - anchoBuscar - anchoTabla;
+
+                // ─── BUSCAR ───
+                lblBuscarC.Location = new Point(margenH, y + 4);
+
+                textBuscarC.Location = new Point(
+                    lblBuscarC.Right + espacioPequeño,
+                    y
+                );
+
                 textBuscarC.Size = new Size(anchoBuscar, altoControl);
-                x += anchoBuscar + 4;
 
-                btnBuscarC.Location = new Point(x, y);
-                btnBuscarC.Size = new Size(anchoBtn, altoControl);
-                x += anchoBtn + 14;
+                btnBuscarC.Location = new Point(
+                    textBuscarC.Right + 2,
+                    y
+                );
 
-                // TABLA
-                Label lblTablas = ObtenerLabel("lblTablas", "Tabla:");
-                lblTablas.Location = new Point(x, y + 4);
-                lblTablas.Size = new Size(55, 20);
-                x += 58;
+                btnBuscarC.Size = new Size(anchoBtnBuscar, altoControl);
 
-                cbTablas.Location = new Point(x, y);
-                cbTablas.Size = new Size(anchoTablas, altoControl);
-                x += anchoTablas + 14;
+                // ─── TABLAS ───
+                lblTablas.Location = new Point(
+                    btnBuscarC.Right + espacioGrande,
+                    y + 4
+                );
 
-                // COLONIA
-                Label lblColonia = ObtenerLabel("lblColonia", "Colonia:");
-                lblColonia.Location = new Point(x, y + 4);
-                lblColonia.Size = new Size(65, 20);
-                x += 68;
+                cbTablas.Location = new Point(
+                    lblTablas.Right + espacioPequeño,
+                    y
+                );
 
-                cbColonia.Location = new Point(x, y);
-                cbColonia.Size = new Size(w - x - margen, altoControl);
+                cbTablas.Size = new Size(anchoTabla, altoControl);
+
+                // ─── COLONIA ───
+                lblColonia.Location = new Point(
+                    cbTablas.Right + espacioGrande,
+                    y + 4
+                );
+
+                cbColonia.Location = new Point(
+                    lblColonia.Right + espacioPequeño,
+                    y
+                );
+
+                cbColonia.Size = new Size(
+                    w - cbColonia.Left - margenH,
+                    altoControl
+                );
             }
             else
             {
-                // ── DOS LÍNEAS ──
-                int anchoTotal = w - margen * 2;
-                int anchoBtn = 42;
-                int anchoBuscar = anchoTotal - anchoBtn - 90 - 8;
+                // ───────────── DOS LÍNEAS ─────────────
+                int margenV = 10;
 
-                // FILA 1 — BUSCAR
-                int y1 = 8;
-                lblBuscarC.Location = new Point(margen, y1 + 4);
-                lblBuscarC.Size = new Size(85, 20);
-                textBuscarC.Location = new Point(margen + 88, y1);
-                textBuscarC.Size = new Size(anchoBuscar, altoControl);
-                btnBuscarC.Location = new Point(w - margen - anchoBtn, y1);
-                btnBuscarC.Size = new Size(anchoBtn, altoControl);
+                int anchoDisponible = w - (margenH * 2);
 
-                // FILA 2 — COMBOS
-                int y2 = y1 + altoControl + 8;
-                int xCmb = margen;
-                int anchoCmb = (int)((anchoTotal - 130) / 2);
+                int anchoBtnBuscar = 35;
 
-                Label lblTablas = ObtenerLabel("lblTablas", "Tabla:");
-                lblTablas.Location = new Point(xCmb, y2 + 4);
-                lblTablas.Size = new Size(50, 20);
-                xCmb += 53;
-                cbTablas.Location = new Point(xCmb, y2);
-                cbTablas.Size = new Size(anchoCmb, altoControl);
-                xCmb += anchoCmb + 10;
+                // ─── FILA 1 : BUSCAR ───
+                int y1 = margenV;
 
-                Label lblColonia = ObtenerLabel("lblColonia", "Colonia:");
-                lblColonia.Location = new Point(xCmb, y2 + 4);
-                lblColonia.Size = new Size(60, 20);
-                xCmb += 63;
-                cbColonia.Location = new Point(xCmb, y2);
-                cbColonia.Size = new Size(w - xCmb - margen, altoControl);
+                lblBuscarC.Location = new Point(
+                    margenH,
+                    y1 + 4
+                );
+
+                int anchoTxtBuscar =
+                    anchoDisponible
+                    - lblBuscarC.Width
+                    - anchoBtnBuscar
+                    - 10;
+
+                textBuscarC.Location = new Point(
+                    lblBuscarC.Right + espacioPequeño,
+                    y1
+                );
+
+                textBuscarC.Size = new Size(
+                    anchoTxtBuscar,
+                    altoControl
+                );
+
+                btnBuscarC.Location = new Point(
+                    textBuscarC.Right + 2,
+                    y1
+                );
+
+                btnBuscarC.Size = new Size(
+                    anchoBtnBuscar,
+                    altoControl
+                );
+
+                // ─── FILA 2 : COMBOS ───
+                int y2 = y1 + altoControl + 10;
+
+                int anchoGrupo =
+                    (anchoDisponible - espacioGrande) / 2;
+
+                // TABLAS
+                lblTablas.Location = new Point(
+                    margenH,
+                    y2 + 4
+                );
+
+                cbTablas.Location = new Point(
+                    lblTablas.Right + espacioPequeño,
+                    y2
+                );
+
+                cbTablas.Size = new Size(
+                    anchoGrupo - lblTablas.Width - espacioPequeño,
+                    altoControl
+                );
+
+                // COLONIA
+                lblColonia.Location = new Point(
+                    cbTablas.Right + espacioGrande,
+                    y2 + 4
+                );
+
+                cbColonia.Location = new Point(
+                    lblColonia.Right + espacioPequeño,
+                    y2
+                );
+
+                cbColonia.Size = new Size(
+                    w - cbColonia.Left - margenH,
+                    altoControl
+                );
             }
 
             pnlBotones.Invalidate();
         }
+
 
         // Helper para crear labels dinámicos una sola vez
         private Label ObtenerLabel(string nombre, string texto)
@@ -765,7 +851,7 @@ namespace VeloxSoft.Formularios
             lbl.Name = nombre;
             lbl.Text = texto;
             lbl.AutoSize = false;
-            lbl.Font = new Font("Century Gothic", 10F);
+            lbl.Font = new Font("Century Gothic", 12F);
             lbl.ForeColor = Color.FromArgb(59, 109, 17);
             pnlBotones.Controls.Add(lbl);
             return lbl;
@@ -988,6 +1074,11 @@ namespace VeloxSoft.Formularios
         private void textNumero_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnBuscarC_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnBuscarC, e, 5);
         }
 
 

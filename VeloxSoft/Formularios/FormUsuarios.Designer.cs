@@ -204,9 +204,9 @@
             lblBuscarID.Font = new Font("Century Gothic", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblBuscarID.Location = new Point(3, 17);
             lblBuscarID.Name = "lblBuscarID";
-            lblBuscarID.Size = new Size(118, 27);
+            lblBuscarID.Size = new Size(101, 27);
             lblBuscarID.TabIndex = 0;
-            lblBuscarID.Text = "B.usuario:";
+            lblBuscarID.Text = "Usuario:";
             // 
             // pnlBD
             // 
@@ -332,17 +332,22 @@
             // 
             // btnViewPass
             // 
-            btnViewPass.ForeColor = Color.White;
+            btnViewPass.BackColor = Color.FromArgb(234, 243, 222);
+            btnViewPass.Cursor = Cursors.Hand;
+            btnViewPass.FlatAppearance.BorderSize = 0;
+            btnViewPass.FlatStyle = FlatStyle.Flat;
+            btnViewPass.ForeColor = Color.FromArgb(59, 109, 17);
             btnViewPass.IconChar = FontAwesome.Sharp.IconChar.EyeLowVision;
-            btnViewPass.IconColor = Color.Black;
+            btnViewPass.IconColor = Color.FromArgb(59, 109, 17);
             btnViewPass.IconFont = FontAwesome.Sharp.IconFont.Solid;
-            btnViewPass.IconSize = 30;
-            btnViewPass.Location = new Point(407, 363);
+            btnViewPass.IconSize = 20;
+            btnViewPass.Location = new Point(407, 364);
             btnViewPass.Name = "btnViewPass";
-            btnViewPass.Size = new Size(41, 33);
+            btnViewPass.Size = new Size(40, 32);
             btnViewPass.TabIndex = 59;
-            btnViewPass.UseVisualStyleBackColor = true;
+            btnViewPass.UseVisualStyleBackColor = false;
             btnViewPass.Click += btnViewPass_Click;
+            btnViewPass.Paint += btnViewPass_Paint;
             // 
             // LabelError2
             // 

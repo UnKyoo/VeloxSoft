@@ -457,6 +457,19 @@ namespace VeloxSoft.Formularios
             textContra.Location = new Point(margenGral, yContra + altoLabel + 2);
             textContra.Size = new Size(anchoInput, altoInput);
 
+            // CONTRASEÑA — input más corto para dar espacio al botón
+            int anchoBtnPass = 42;
+            int espacioBtnPass = 6;
+
+            textContra.Location = new Point(margenGral, yContra + altoLabel + 2);
+            textContra.Size = new Size(anchoInput - anchoBtnPass - espacioBtnPass, altoInput);
+
+            // Botón ver/ocultar contraseña — siempre pegado a la derecha del input
+            btnViewPass.Location = new Point(
+                textContra.Right + espacioBtnPass,
+                yContra + altoLabel + 2
+            );
+            btnViewPass.Size = new Size(anchoBtnPass, altoInput);
 
 
             // --- BLOQUE DE BOTONES (SEGÚN TU DISEÑO CS) ---
@@ -723,6 +736,11 @@ namespace VeloxSoft.Formularios
                 textContra.PasswordChar = '\0';
                 btnViewPass.IconChar = FontAwesome.Sharp.IconChar.Eye;
             }
+        }
+
+        private void btnViewPass_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnViewPass, e, 15);
         }
     }
 }

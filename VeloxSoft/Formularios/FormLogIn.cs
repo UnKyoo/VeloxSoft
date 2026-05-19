@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using VeloxSoft.Services;
 using VeloxSoft.Config;
 using VeloxSoft.Models;
+using VeloxSoft.Services;
 
 namespace VeloxSoft.Formularios
 {
@@ -89,7 +90,7 @@ namespace VeloxSoft.Formularios
 
         private void NavPanel_Paint(object sender, PaintEventArgs e)
         {
-
+            RedondearPanel((Panel)sender, e, 15);
         }
 
         private void TxtUsuario_KeyPress(object sender, KeyPressEventArgs e)
@@ -136,5 +137,32 @@ namespace VeloxSoft.Formularios
                 pbViewPassword.Image = Properties.Resources.View;
             }
         }
+
+        private void RedondearPanel(Panel p, PaintEventArgs e, int radio)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            GraphicsPath path = new GraphicsPath();
+
+            // Dibujamos el camino de las esquinas
+            path.AddArc(0, 0, radio, radio, 180, 90);
+            path.AddArc(p.Width - radio, 0, radio, radio, 270, 90);
+            path.AddArc(p.Width - radio, p.Height - radio, radio, radio, 0, 90);
+            path.AddArc(0, p.Height - radio, radio, radio, 90, 90);
+            path.CloseAllFigures();
+
+            // Aplicamos la forma al panel para que sea "físicamente" redondo
+            p.Region = new Region(path);
+
+            // Dibuja un borde sutil con el verde #A4D1A5 de tu paleta Fruit Salad
+            // Esto hace que el cuadro resalte sobre el fondo verde oscuro
+            using (Pen pen = new Pen(ColorTranslator.FromHtml("#A4D1A5"), 2))
+            {
+                e.Graphics.DrawPath(pen, path);
+            }
+
+        }
+
+
     }
+
 }

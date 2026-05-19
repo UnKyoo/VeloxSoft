@@ -911,6 +911,11 @@ namespace VeloxSoft.Formularios
         {
 
         }
+
+        private void btnBuscarI_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnBuscarI, e, 15);
+        }
     }
 
 }

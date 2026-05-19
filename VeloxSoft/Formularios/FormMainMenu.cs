@@ -40,6 +40,17 @@ namespace VeloxSoft
             this.StartPosition = FormStartPosition.CenterScreen;
             // ----------------------------------
 
+
+            // PANTALLA COMPLETA
+            this.WindowState = FormWindowState.Maximized;
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.MinimumSize = new Size(1100, 700);
+
+            // IMPORTANTE
+            this.MaximizedBounds = Screen.FromHandle(this.Handle).WorkingArea;
+
+            this.ResumeLayout(false);
+
             // Configuración estética del Form
             this.Text = string.Empty;
             this.ControlBox = false; // Quita los botones cerrar/min/max estándar

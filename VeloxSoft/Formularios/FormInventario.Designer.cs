@@ -287,6 +287,7 @@
             btnBuscarI.TabIndex = 58;
             btnBuscarI.UseVisualStyleBackColor = false;
             btnBuscarI.Click += btnBuscarI_Click;
+            btnBuscarI.Paint += btnBuscarI_Paint;
             // 
             // textBuscarID
             // 
