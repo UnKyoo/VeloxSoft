@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using VeloxSoft.Models;
 
 namespace VeloxSoft.Formularios
 {
@@ -16,6 +17,13 @@ namespace VeloxSoft.Formularios
             this.TopLevel = false;
             this.FormBorderStyle = FormBorderStyle.None;
             this.Dock = DockStyle.Fill;
+        }
+
+        public void CargarDirecciones(List<Direccion> lista)
+        {
+            dgvDireccion.Rows.Clear();
+            foreach (var dir in lista)
+                dgvDireccion.Rows.Add(dir.NumCasa, dir.Calle, dir.Cruzamientos, dir.Referencia, dir.Colonia);
         }
 
         public DataGridView Tabla => dgvDireccion;

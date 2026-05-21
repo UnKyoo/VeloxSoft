@@ -4,11 +4,11 @@ using System.Text;
 
 namespace VeloxSoft.Models
 {
-    public class DireccionItem
+    public class Colonia
     {
         public int Id { get; set; }
         public string Texto { get; set; }
 
-        public override string ToString() => Texto; // Lo que muestra el ComboBox
+        public override string ToString() => Texto;
     }
 }

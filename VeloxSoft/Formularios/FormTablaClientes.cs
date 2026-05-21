@@ -53,19 +53,6 @@ namespace VeloxSoft.Formularios
                         texto.IndexOf(numero, StringComparison.OrdinalIgnoreCase) >= 0;
                 }
              }
-            public void FiltrarPorColonia(string colonia)
-            {
-                foreach (DataGridViewRow row in dgvClientes.Rows)
-                {
-                    if (row.IsNewRow)
-                        continue;
-
-                    string texto = row.Cells["Colonia"].Value?.ToString() ?? "";
-
-                    row.Visible =
-                        texto.IndexOf(colonia, StringComparison.OrdinalIgnoreCase) >= 0;
-                }
-            }
 
         public void MostrarTodos()
             {

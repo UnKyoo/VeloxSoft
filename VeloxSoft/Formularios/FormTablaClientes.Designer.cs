@@ -13,6 +13,8 @@
 
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             dgvClientes = new DataGridView();
             colNumero = new DataGridViewTextBoxColumn();
             colNombre = new DataGridViewTextBoxColumn();
@@ -21,66 +23,87 @@
             colDireccion = new DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)dgvClientes).BeginInit();
             SuspendLayout();
-
-            // --- CONFIGURACIÓN GENERAL ---
+            // 
+            // dgvClientes
+            // 
             dgvClientes.AllowUserToAddRows = false;
-            dgvClientes.AllowUserToResizeRows = false; // Bloquea redimensión de filas
-            dgvClientes.ReadOnly = true;
-            dgvClientes.RowHeadersVisible = false; // Oculta la columna gris de la izquierda
+            dgvClientes.AllowUserToResizeRows = false;
             dgvClientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvClientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvClientes.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvClientes.BackgroundColor = Color.White;
             dgvClientes.BorderStyle = BorderStyle.None;
-            dgvClientes.Dock = DockStyle.Fill;
-
-            // --- ESTILO DE LÍNEAS (Para que se vea como en image_bcd1ba.png) ---
             dgvClientes.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvClientes.GridColor = Color.FromArgb(235, 235, 235); // Gris muy tenue
-
-            // --- ENCABEZADOS (HEADERS) ---
-            dgvClientes.EnableHeadersVisualStyles = false;
             dgvClientes.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(234, 243, 222);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = Color.FromArgb(85, 125, 70);
+            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(234, 243, 222);
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvClientes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dgvClientes.ColumnHeadersHeight = 45;
-            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(234, 243, 222); // Verde claro de fondo
-            dgvClientes.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(85, 125, 70);   // Verde oscuro para el texto
-            dgvClientes.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold); // Segoe UI es más moderna
-            dgvClientes.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(234, 243, 222); // Evita cambio de color al hacer clic
-
-            // --- ESTILO DE CELDAS (FILAS) ---
-            dgvClientes.RowTemplate.Height = 50; // Da espacio y aire a las celdas
-            dgvClientes.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
-            dgvClientes.DefaultCellStyle.ForeColor = Color.FromArgb(80, 80, 80); // Gris oscuro, no negro puro
-            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 245, 245); // Color de selección sutil
-            dgvClientes.DefaultCellStyle.SelectionForeColor = Color.FromArgb(80, 80, 80);
-            dgvClientes.DefaultCellStyle.WrapMode = DataGridViewTriState.True; // Permite el texto en dos líneas
-
-            // --- COLUMNAS ---
-            dgvClientes.Columns.AddRange(new DataGridViewColumn[]
-            {
-                colNumero, colNombre, colApellido, colApodo, colDireccion
-            });
+            dgvClientes.Columns.AddRange(new DataGridViewColumn[] { colNumero, colNombre, colApellido, colApodo, colDireccion });
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(80, 80, 80);
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(245, 245, 245);
+            dataGridViewCellStyle2.SelectionForeColor = Color.FromArgb(80, 80, 80);
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvClientes.DefaultCellStyle = dataGridViewCellStyle2;
+            dgvClientes.Dock = DockStyle.Fill;
+            dgvClientes.EnableHeadersVisualStyles = false;
+            dgvClientes.GridColor = Color.FromArgb(235, 235, 235);
+            dgvClientes.Location = new Point(0, 0);
+            dgvClientes.Margin = new Padding(3, 2, 3, 2);
             dgvClientes.Name = "dgvClientes";
+            dgvClientes.ReadOnly = true;
+            dgvClientes.RowHeadersVisible = false;
+            dgvClientes.RowTemplate.Height = 50;
+            dgvClientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvClientes.Size = new Size(700, 375);
             dgvClientes.TabIndex = 0;
-
+            // 
+            // colNumero
+            // 
             colNumero.HeaderText = "TELÉFONO";
-            colNumero.Name = "Numero";
+            colNumero.Name = "colNumero";
+            colNumero.ReadOnly = true;
+            // 
+            // colNombre
+            // 
             colNombre.HeaderText = "NOMBRE";
-            colNombre.Name = "Nombre";
+            colNombre.Name = "colNombre";
+            colNombre.ReadOnly = true;
+            // 
+            // colApellido
+            // 
             colApellido.HeaderText = "APELLIDO";
-            colApellido.Name = "Apellido";
+            colApellido.Name = "colApellido";
+            colApellido.ReadOnly = true;
+            // 
+            // colApodo
+            // 
             colApodo.HeaderText = "APODO";
-            colApodo.Name = "Apodo";
+            colApodo.Name = "colApodo";
+            colApodo.ReadOnly = true;
+            // 
+            // colDireccion
+            // 
             colDireccion.HeaderText = "DIRECCIÓN";
-            colDireccion.Name = "Dieccion";
-
-            // --- FORM PROPERTIES ---
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            colDireccion.Name = "colDireccion";
+            colDireccion.ReadOnly = true;
+            // 
+            // FormTablaClientes
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 500);
+            ClientSize = new Size(700, 375);
             Controls.Add(dgvClientes);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "FormTablaClientes";
             Text = "Lista de Clientes";
-
             ((System.ComponentModel.ISupportInitialize)dgvClientes).EndInit();
             ResumeLayout(false);
         }

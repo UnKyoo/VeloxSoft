@@ -13,6 +13,8 @@
 
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             dgvDireccion = new DataGridView();
             colNumeroCasa = new DataGridViewTextBoxColumn();
             colCalle = new DataGridViewTextBoxColumn();
@@ -21,77 +23,90 @@
             colColonia = new DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)dgvDireccion).BeginInit();
             SuspendLayout();
-
-            // --- CONFIGURACIÓN GENERAL DEL DATAGRIDVIEW ---
+            // 
+            // dgvDireccion
+            // 
             dgvDireccion.AllowUserToAddRows = false;
             dgvDireccion.AllowUserToResizeRows = false;
-            dgvDireccion.ReadOnly = true;
-            dgvDireccion.RowHeadersVisible = false;
             dgvDireccion.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvDireccion.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvDireccion.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvDireccion.BackgroundColor = Color.White;
             dgvDireccion.BorderStyle = BorderStyle.None;
-            dgvDireccion.Dock = DockStyle.Fill;
-
-            // --- ESTILO DE BORDES Y CUADRÍCULA ---
-            // Solo líneas horizontales sutiles para un look limpio
             dgvDireccion.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvDireccion.GridColor = Color.FromArgb(235, 235, 235);
-
-            // --- ENCABEZADOS (HEADERS) ---
-            dgvDireccion.EnableHeadersVisualStyles = false;
             dgvDireccion.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(234, 243, 222);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = Color.FromArgb(85, 125, 70);
+            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(234, 243, 222);
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvDireccion.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dgvDireccion.ColumnHeadersHeight = 45;
-            // Fondo verde claro y texto verde oscuro (idéntico a image_bcd1ba.png)
-            dgvDireccion.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(234, 243, 222);
-            dgvDireccion.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(85, 125, 70);
-            dgvDireccion.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            dgvDireccion.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(234, 243, 222);
-
-            // --- ESTILO DE FILAS Y CELDAS ---
-            dgvDireccion.RowTemplate.Height = 50;
-            dgvDireccion.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
-            dgvDireccion.DefaultCellStyle.ForeColor = Color.FromArgb(80, 80, 80);
-            dgvDireccion.DefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 245, 245);
-            dgvDireccion.DefaultCellStyle.SelectionForeColor = Color.FromArgb(80, 80, 80);
-            dgvDireccion.DefaultCellStyle.WrapMode = DataGridViewTriState.True; // Útil para referencias largas
-
-            // --- CONFIGURACIÓN DE COLUMNAS ---
-            dgvDireccion.Columns.AddRange(new DataGridViewColumn[]
-            {
-                colNumeroCasa, colCalle, colCruzamientos, colReferencia, colColonia
-            });
+            dgvDireccion.Columns.AddRange(new DataGridViewColumn[] { colNumeroCasa, colCalle, colCruzamientos, colReferencia, colColonia });
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(80, 80, 80);
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(245, 245, 245);
+            dataGridViewCellStyle2.SelectionForeColor = Color.FromArgb(80, 80, 80);
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvDireccion.DefaultCellStyle = dataGridViewCellStyle2;
+            dgvDireccion.Dock = DockStyle.Fill;
+            dgvDireccion.EnableHeadersVisualStyles = false;
+            dgvDireccion.GridColor = Color.FromArgb(235, 235, 235);
+            dgvDireccion.Location = new Point(0, 0);
+            dgvDireccion.Margin = new Padding(3, 2, 3, 2);
             dgvDireccion.Name = "dgvDireccion";
+            dgvDireccion.ReadOnly = true;
+            dgvDireccion.RowHeadersVisible = false;
+            dgvDireccion.RowTemplate.Height = 50;
+            dgvDireccion.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvDireccion.Size = new Size(788, 375);
             dgvDireccion.TabIndex = 0;
-
+            // 
+            // colNumeroCasa
+            // 
+            colNumeroCasa.FillWeight = 50F;
             colNumeroCasa.HeaderText = "N° CASA";
-            colNumeroCasa.Name = "NumeroCasa";
-            colNumeroCasa.FillWeight = 50; // Más angosta
-
+            colNumeroCasa.Name = "colNumeroCasa";
+            colNumeroCasa.ReadOnly = true;
+            // 
+            // colCalle
+            // 
             colCalle.HeaderText = "CALLE";
-            colCalle.Name = "Calle";
-            colCalle.FillWeight = 100;
-
+            colCalle.Name = "colCalle";
+            colCalle.ReadOnly = true;
+            // 
+            // colCruzamientos
+            // 
+            colCruzamientos.FillWeight = 120F;
             colCruzamientos.HeaderText = "CRUZAMIENTOS";
-            colCruzamientos.Name = "Cruzamientos";
-            colCruzamientos.FillWeight = 120;
-
+            colCruzamientos.Name = "colCruzamientos";
+            colCruzamientos.ReadOnly = true;
+            // 
+            // colReferencia
+            // 
+            colReferencia.FillWeight = 150F;
             colReferencia.HeaderText = "REFERENCIA";
-            colReferencia.Name = "Referencia";
-            colReferencia.FillWeight = 150; // Más espacio para descripciones
-
+            colReferencia.Name = "colReferencia";
+            colReferencia.ReadOnly = true;
+            // 
+            // colColonia
+            // 
             colColonia.HeaderText = "COLONIA";
-            colColonia.Name = "Colonia";
-            colColonia.FillWeight = 100;
-
-            // --- PROPIEDADES DEL FORMULARIO ---
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            colColonia.Name = "colColonia";
+            colColonia.ReadOnly = true;
+            // 
+            // FormTablaDireccion
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(900, 500); // Un poco más ancho por la cantidad de columnas
+            ClientSize = new Size(788, 375);
             Controls.Add(dgvDireccion);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "FormTablaDireccion";
             Text = "Gestión de Direcciones";
-
             ((System.ComponentModel.ISupportInitialize)dgvDireccion).EndInit();
             ResumeLayout(false);
         }

@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using VeloxSoft.Models;
 
 namespace VeloxSoft.Formularios
 {
@@ -16,6 +17,13 @@ namespace VeloxSoft.Formularios
             this.TopLevel = false;
             this.FormBorderStyle = FormBorderStyle.None;
             this.Dock = DockStyle.Fill;
+        }
+
+        public void CargarColonias(List<Colonia> lista)
+        {
+            dgvColonias.Rows.Clear();
+            foreach (var colonia in lista)
+                dgvColonias.Rows.Add(colonia.Id, colonia.Texto);
         }
 
         public DataGridView Tabla => dgvColonias;
