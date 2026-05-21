@@ -31,14 +31,14 @@
             pnlClientes = new Panel();
             pnlBD = new Panel();
             pnlBotones = new Panel();
-            cbColonia = new ComboBox();
+            cbFilColonia = new ComboBox();
             cbTablas = new ComboBox();
             btnBuscarC = new FontAwesome.Sharp.IconButton();
             textBuscarC = new TextBox();
             lblBuscarC = new Label();
             pnlFormulario = new Panel();
             textDIreccion = new ComboBox();
-            label1 = new Label();
+            LabelError = new Label();
             btnAgregar = new FontAwesome.Sharp.IconButton();
             btnEliminar = new Button();
             btnLimpiar = new Button();
@@ -85,7 +85,7 @@
             // 
             pnlBotones.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlBotones.BackColor = Color.White;
-            pnlBotones.Controls.Add(cbColonia);
+            pnlBotones.Controls.Add(cbFilColonia);
             pnlBotones.Controls.Add(cbTablas);
             pnlBotones.Controls.Add(btnBuscarC);
             pnlBotones.Controls.Add(textBuscarC);
@@ -97,26 +97,25 @@
             pnlBotones.Paint += pnlBotones_Paint;
             pnlBotones.Resize += pnlBotones_Resize;
             // 
-            // cbColonia
+            // cbFilColonia
             // 
-            cbColonia.BackColor = Color.FromArgb(250, 254, 247);
-            cbColonia.DropDownStyle = ComboBoxStyle.DropDownList;
-            cbColonia.FormattingEnabled = true;
-            cbColonia.Items.AddRange(new object[] { "Activo", "Inactivo" });
-            cbColonia.Location = new Point(297, 50);
-            cbColonia.Name = "cbColonia";
-            cbColonia.Size = new Size(142, 28);
-            cbColonia.TabIndex = 59;
+            cbFilColonia.BackColor = Color.FromArgb(250, 254, 247);
+            cbFilColonia.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbFilColonia.FormattingEnabled = true;
+            cbFilColonia.Location = new Point(297, 50);
+            cbFilColonia.Name = "cbFilColonia";
+            cbFilColonia.Size = new Size(142, 23);
+            cbFilColonia.TabIndex = 59;
+            cbFilColonia.SelectedIndexChanged += cbColonia_SelectedIndexChanged_1;
             // 
             // cbTablas
             // 
             cbTablas.BackColor = Color.FromArgb(250, 254, 247);
             cbTablas.DropDownStyle = ComboBoxStyle.DropDownList;
             cbTablas.FormattingEnabled = true;
-            cbTablas.Items.AddRange(new object[] { "Activo", "Inactivo" });
             cbTablas.Location = new Point(67, 50);
             cbTablas.Name = "cbTablas";
-            cbTablas.Size = new Size(118, 28);
+            cbTablas.Size = new Size(118, 23);
             cbTablas.TabIndex = 57;
             // 
             // btnBuscarC
@@ -135,7 +134,6 @@
             btnBuscarC.TabIndex = 55;
             btnBuscarC.UseVisualStyleBackColor = false;
             btnBuscarC.Click += btnBuscarC_Click;
-            btnBuscarC.Paint += btnBuscarC_Paint;
             // 
             // textBuscarC
             // 
@@ -165,7 +163,7 @@
             pnlFormulario.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlFormulario.BackColor = Color.White;
             pnlFormulario.Controls.Add(textDIreccion);
-            pnlFormulario.Controls.Add(label1);
+            pnlFormulario.Controls.Add(LabelError);
             pnlFormulario.Controls.Add(btnAgregar);
             pnlFormulario.Controls.Add(btnEliminar);
             pnlFormulario.Controls.Add(btnLimpiar);
@@ -198,15 +196,16 @@
             textDIreccion.TabIndex = 56;
             textDIreccion.SelectedIndexChanged += textDIreccion_SelectedIndexChanged;
             // 
-            // label1
+            // LabelError
             // 
-            label1.Dock = DockStyle.Top;
-            label1.Location = new Point(0, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(584, 20);
-            label1.TabIndex = 55;
-            label1.Text = "LabelError";
-            label1.TextAlign = ContentAlignment.TopCenter;
+            LabelError.Dock = DockStyle.Top;
+            LabelError.Location = new Point(0, 0);
+            LabelError.Name = "LabelError";
+            LabelError.Size = new Size(584, 20);
+            LabelError.TabIndex = 55;
+            LabelError.Text = "LabelError";
+            LabelError.TextAlign = ContentAlignment.TopCenter;
+            LabelError.Visible = false;
             // 
             // btnAgregar
             // 
@@ -251,6 +250,7 @@
             btnLimpiar.TabIndex = 52;
             btnLimpiar.Text = "Limpiar";
             btnLimpiar.UseVisualStyleBackColor = false;
+            btnLimpiar.Click += btnLimpiar_Click;
             btnLimpiar.Paint += btnLimpiar_Paint;
             // 
             // btnGuardar
@@ -266,6 +266,7 @@
             btnGuardar.TabIndex = 51;
             btnGuardar.Text = "Guardar";
             btnGuardar.UseVisualStyleBackColor = false;
+            btnGuardar.Click += btnGuardar_Click;
             btnGuardar.Paint += btnGuardar_Paint;
             // 
             // lblDireccion
@@ -275,7 +276,7 @@
             lblDireccion.ForeColor = Color.FromArgb(59, 109, 17);
             lblDireccion.Location = new Point(82, 334);
             lblDireccion.Name = "lblDireccion";
-            lblDireccion.Size = new Size(101, 23);
+            lblDireccion.Size = new Size(83, 21);
             lblDireccion.TabIndex = 48;
             lblDireccion.Text = "Direccion";
             // 
@@ -299,7 +300,7 @@
             lblApodo.ForeColor = Color.FromArgb(59, 109, 17);
             lblApodo.Location = new Point(80, 272);
             lblApodo.Name = "lblApodo";
-            lblApodo.Size = new Size(189, 23);
+            lblApodo.Size = new Size(150, 21);
             lblApodo.TabIndex = 46;
             lblApodo.Text = "Apodo del cliente";
             // 
@@ -323,7 +324,7 @@
             lblApellido.ForeColor = Color.FromArgb(59, 109, 17);
             lblApellido.Location = new Point(78, 205);
             lblApellido.Name = "lblApellido";
-            lblApellido.Size = new Size(202, 23);
+            lblApellido.Size = new Size(159, 21);
             lblApellido.TabIndex = 44;
             lblApellido.Text = "Apellido del cliente";
             // 
@@ -347,7 +348,7 @@
             lblNombre.ForeColor = Color.FromArgb(59, 109, 17);
             lblNombre.Location = new Point(76, 141);
             lblNombre.Name = "lblNombre";
-            lblNombre.Size = new Size(200, 23);
+            lblNombre.Size = new Size(158, 21);
             lblNombre.TabIndex = 42;
             lblNombre.Text = "Nombre del cliente";
             // 
@@ -371,7 +372,7 @@
             lblNumero.ForeColor = Color.FromArgb(59, 109, 17);
             lblNumero.Location = new Point(74, 78);
             lblNumero.Name = "lblNumero";
-            lblNumero.Size = new Size(192, 23);
+            lblNumero.Size = new Size(154, 21);
             lblNumero.TabIndex = 40;
             lblNumero.Text = "Numero telefonico";
             // 
@@ -381,7 +382,7 @@
             lblTituloForm.Font = new Font("Franklin Gothic Medium Cond", 28.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblTituloForm.Location = new Point(17, 11);
             lblTituloForm.Name = "lblTituloForm";
-            lblTituloForm.Size = new Size(163, 54);
+            lblTituloForm.Size = new Size(131, 44);
             lblTituloForm.TabIndex = 0;
             lblTituloForm.Text = "Clientes";
             // 
@@ -420,13 +421,13 @@
         private Button btnEliminar;
         private Button btnLimpiar;
         private Button btnGuardar;
-        private ComboBox cbColonia;
+        private ComboBox cbFilColonia;
         private ComboBox cbTablas;
         private FontAwesome.Sharp.IconButton btnBuscarC;
         private TextBox textBuscarC;
         private Label lblBuscarC;
         private FontAwesome.Sharp.IconButton btnAgregar;
-        private Label label1;
+        private Label LabelError;
         private ComboBox textDIreccion;
     }
 }

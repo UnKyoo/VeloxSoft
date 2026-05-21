@@ -23,7 +23,7 @@ namespace VeloxSoft.Formularios
         private readonly ServicioClientes _ServicioClientes;
         public FormClientes(ServicioClientes servicioClientes)
         {
-
+            _ServicioClientes = servicioClientes;
             InitializeComponent();
             CrearMiniFormulario();
             btnAgregar.Click += btnAgregar_Click;
@@ -34,22 +34,43 @@ namespace VeloxSoft.Formularios
             InicializarFiltros();
             // Evita el efecto de "congelado" o parpadeo
             this.DoubleBuffered = true;
-            _ServicioClientes = servicioClientes;
+          
         }
 
-        //LÓGICA (GIL)
+        // -------------------------- lógica GIL ---------------------------------
         private void FormClientes_Load(object sender, EventArgs e) //cuando se carga el formulario, se llama a este método para cargar los clientes en el DataGridView
         {
-            var lista = _ServicioClientes.Ver_Clientes(out string errorMessage); //obtiene la lista de clientes desde el servicio, y también un mensaje de error si ocurre algo
+            var lista = _ServicioClientes.Ver_Clientes(out string errorMessage);
+            _formTablaClientes?.CargarClientes(lista);
+
+            var colonias = _ServicioClientes.Ver_Colonias(out string err2);
+            _formTablaColonias?.CargarColonias(colonias);
+
+            var direcciones = _ServicioClientes.Ver_Direcciones(out string err3);
+            _formTablaDireccion?.CargarDirecciones(direcciones);
 
             if (!string.IsNullOrEmpty(errorMessage)) //si hay un mensaje de error, se muestra en un MessageBox y no se carga nada en el DataGridViewf
             {
                 MessageBox.Show(errorMessage);
                 return;
             }
-            _formTablaClientes?.CargarClientes(lista);
+
             CargarDirecciones();
+
+            cbFilColonia.Items.Clear();
+            cbFilColonia.Items.Add(new Colonia { Id = 0, Texto = "Todas" });
+            foreach (var col in colonias)
+                cbFilColonia.Items.Add(col);
+            cbFilColonia.SelectedIndex = 0;
+            cbFilColonia.SelectedIndexChanged += cbColonia_SelectedIndexChanged_1;
         }
+
+        private void ImprimirError(string mensaje)
+        {
+            LabelError.Text = mensaje;
+            LabelError.ForeColor = Color.Red;
+            LabelError.Visible = true;
+        }   
 
         private void LimpiarMiniFormulario()
         {
@@ -70,6 +91,11 @@ namespace VeloxSoft.Formularios
             (pnlMiniFormulario.Controls["pnlNuevaColonia"] as Panel)!.Visible = false;
         }
 
+        private void cbColonia_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            BusquedaCliente();
+
+        }
 
         //Sanitizado - Validación de los campos de texto para evitar caracteres no deseados y limitar la longitud
         private void textNumero_KeyPress(object sender, KeyPressEventArgs e)
@@ -132,10 +158,12 @@ namespace VeloxSoft.Formularios
 
             textDIreccion.Items.Clear();
             foreach (var dir in lista)
-                textDIreccion.Items.Add(dir);
+                textDIreccion.Items.Add(dir); // ToString() genera el texto del ComboBox
 
             textDIreccion.SelectedIndex = -1;
         }
+
+        //Método para cargar colonias en el combobox del mini formulario
 
         private void CargarColonias(ComboBox cb)
         {
@@ -149,8 +177,601 @@ namespace VeloxSoft.Formularios
             cb.SelectedIndex = -1;
         }
 
-        //DISEÑO ARMANDO
+        //Metodo para llamar al filtro dentro del cbFILColonia y en el botonBuscar
+        private void BusquedaCliente()
+        {
+            string? id = string.IsNullOrWhiteSpace(textBuscarC.Text) 
+            ? null : textBuscarC.Text.Trim();
+            //is ColoniaItem verifia si el objeto seleccionado es realmente del modelo ColoniaItem, si es verdadero lo convierte al tipo del dato del modelom y lo guarda en la variable col
+            string? colonia = cbFilColonia.SelectedItem is Colonia col && col.Id != 0 // && col.id!=0 verifica que no sea la opción "Todas" que tiene id 0, si es diferente de 0 entonces se asigna el texto de la colonia al filtro, de lo contrario se asigna null para no filtrar por colonia
+            ? col.Texto : null;
 
+            string tablaActual = cbTablas.SelectedItem?.ToString() ?? "Clientes"; //Por si no escoge ninguna tabla , que por defecto sea Clientes
+
+            // 2. Evaluar el flujo según la tabla seleccionada
+            if (tablaActual == "Clientes")
+            {
+                // Usamos el flujo de Clientes nativo (retorna List<Cliente>)
+                var listaClientes = _ServicioClientes.Ver_Clientes(out string errorMessage, id, colonia);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    
+                    return;
+                }
+
+                MostrarFormEnPanel(_formTablaClientes);
+                _formTablaClientes?.CargarClientes(listaClientes);
+            }
+            else if (tablaActual == "Dirección")
+            {
+                // ¡Aquí está el cambio! Usamos el método filtrado que acabamos de ajustar (retorna List<Direccion>)
+                var listaDirecciones = _ServicioClientes.Ver_Direcciones(out string errorMessage, id, colonia);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    MessageBox.Show(errorMessage);
+                    return;
+                }
+
+                MostrarFormEnPanel(_formTablaDireccion);
+                _formTablaDireccion?.CargarDirecciones(listaDirecciones);
+            }
+        }
+
+     
+
+        //Boton de guardar para añadir y/o actualizar clientes
+        private void btnGuardar_Click(object sender, EventArgs e)
+        {
+            // 1. Validar campos vacíos
+            if (string.IsNullOrWhiteSpace(textNumero.Text)  ||
+                string.IsNullOrWhiteSpace(textNombre.Text) ||
+                string.IsNullOrWhiteSpace(textApellido.Text))
+            {
+                LabelError.Text = "Teléfono, nombre y apellido son obligatorios.";
+                LabelError.ForeColor = Color.Red;
+                LabelError.Visible = true;
+                return;
+            }
+
+            // 2. Validar que el teléfono tenga exactamente 10 dígitos
+            if (textNumero.Text.Length != 10)
+            {
+                LabelError.Text = "El número telefónico debe tener 10 dígitos.";
+                LabelError.ForeColor = Color.Red;
+                LabelError.Visible = true;
+                return;
+            }
+
+            // 3. Validar que haya dirección seleccionada
+            if (textDIreccion.SelectedItem == null)
+            {
+                LabelError.Text = "Selecciona una dirección.";
+                LabelError.ForeColor = Color.Red;
+                LabelError.Visible = true;
+                return;
+            }
+
+            // 4. Obtener valores
+            long idCel = long.Parse(textNumero.Text.Trim());
+            string nombre = textNombre.Text.Trim();
+            string apellido = textApellido.Text.Trim();
+            string apodo = textApodo.Text == "Apodo..." ? "" : textApodo.Text.Trim();
+            Direccion direccion = (Direccion)textDIreccion.SelectedItem;
+
+            // 5. Llamar al servicio
+            string mensaje = _ServicioClientes.Insertar_Cliente(idCel, nombre, apellido, apodo, direccion.Id, out string errorMessage);
+
+            // 6. Procesar respuesta
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                LabelError.Text = errorMessage;
+                LabelError.ForeColor = Color.Red;
+                LabelError.Visible = true;
+                return;
+            }
+
+            LabelError.Text = mensaje;
+            LabelError.ForeColor = Color.Green;
+            LabelError.Visible = true;
+
+            // 7. Recargar tabla y limpiar campos
+            var lista = _ServicioClientes.Ver_Clientes(out string err);
+            _formTablaClientes?.CargarClientes(lista);
+
+            var colonias = _ServicioClientes.Ver_Colonias(out string err2);
+            _formTablaColonias?.CargarColonias(colonias);
+
+            var direcciones = _ServicioClientes.Ver_Direcciones(out string err3);
+            _formTablaDireccion?.CargarDirecciones(direcciones);
+
+            LimpiarCampos();
+        }
+        //Limpiar campos del formulario después de guardar un cliente, para que el usuario pueda ingresar otro cliente sin tener que borrar los campos manualmente. También se limpia el mensaje de error para evitar confusiones.
+        private void LimpiarCampos()
+        {
+            textNumero.Text = "";
+            textNumero.ForeColor = Color.DarkGray;
+
+            textNombre.Text = "";
+            textNombre.ForeColor = Color.DarkGray;
+
+            textApellido.Text = "";
+            textApellido.ForeColor = Color.DarkGray;
+
+            textApodo.Text = "";
+            textApodo.ForeColor = Color.DarkGray;
+
+            textDIreccion.SelectedIndex = -1;
+
+            LabelError.Text = "";
+            LabelError.Visible = false;
+        }
+
+        private void textDIreccion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+           /* if (textDIreccion.SelectedItem is Direccion seleccionada)
+            {
+                MessageBox.Show($"ID: {seleccionada.Id}\n{seleccionada}");
+            }*/
+        }
+
+        private void btnLimpiar_Click(object sender, EventArgs e)
+        {
+            LimpiarCampos();
+        }
+
+        private void btnBuscarC_Click(object? sender, EventArgs e)
+        {
+            BusquedaCliente();
+        }
+
+        //---------------------- DISEÑO ARMANDO ---------------------------------
+
+        //Diseño de estetica y botonoes
+
+        private void pnlMiniFormulario_MouseDown(object? sender, MouseEventArgs e)
+        {
+            if (pnlMiniFormulario == null) return;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                moviendoMiniFormulario = true;
+                puntoInicioMouse = Cursor.Position;
+                puntoInicioPanel = pnlMiniFormulario.Location;
+            }
+        }
+
+        private void pnlMiniFormulario_MouseMove(object? sender, MouseEventArgs e)
+        {
+            if (!moviendoMiniFormulario || pnlMiniFormulario == null) return;
+
+            Point delta = new Point(
+                Cursor.Position.X - puntoInicioMouse.X,
+                Cursor.Position.Y - puntoInicioMouse.Y
+            );
+
+            int nuevaX = puntoInicioPanel.X + delta.X;
+            int nuevaY = puntoInicioPanel.Y + delta.Y;
+
+            int minX = pnlClientes.Left;
+            int minY = pnlClientes.Top;
+
+            int maxX = pnlClientes.Right - pnlMiniFormulario.Width;
+            int maxY = pnlClientes.Bottom - pnlMiniFormulario.Height;
+
+            if (nuevaX < minX) nuevaX = minX;
+            if (nuevaY < minY) nuevaY = minY;
+
+            if (nuevaX > maxX) nuevaX = maxX;
+            if (nuevaY > maxY) nuevaY = maxY;
+
+            pnlMiniFormulario.Location = new Point(nuevaX, nuevaY);
+        }
+
+        private void pnlMiniFormulario_MouseUp(object? sender, MouseEventArgs e)
+        {
+            moviendoMiniFormulario = false;
+        }
+
+        private void RedondearPanel(Panel p, PaintEventArgs e, int radio)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            GraphicsPath path = new GraphicsPath();
+
+            // Dibujamos el camino de las esquinas
+            path.AddArc(0, 0, radio, radio, 180, 90);
+            path.AddArc(p.Width - radio, 0, radio, radio, 270, 90);
+            path.AddArc(p.Width - radio, p.Height - radio, radio, radio, 0, 90);
+            path.AddArc(0, p.Height - radio, radio, radio, 90, 90);
+            path.CloseAllFigures();
+
+            // Aplicamos la forma al panel para que sea "físicamente" redondo
+            p.Region = new Region(path);
+
+            // Dibuja un borde sutil con el verde #A4D1A5 de tu paleta Fruit Salad
+            // Esto hace que el cuadro resalte sobre el fondo verde oscuro
+            using (Pen pen = new Pen(ColorTranslator.FromHtml("#A4D1A5"), 2))
+            {
+                e.Graphics.DrawPath(pen, path);
+            }
+
+        }
+
+        // Variables
+        private FormTablaClientes? _formTablaClientes;
+        private FormTablaColonias? _formTablaColonias;
+        private FormTablaDireccion? _formTablaDireccion;
+        private Form? _formActual;
+
+        private void MostrarFormEnPanel(Form form)
+        {
+            if (_formActual != null)
+                _formActual.Hide();
+
+            if (!pnlBD.Controls.Contains(form))
+                pnlBD.Controls.Add(form);
+
+            form.Show();
+            _formActual = form;
+        }
+
+        private void InicializarFormulariosBD()
+        {
+            _formTablaClientes = new FormTablaClientes();
+            _formTablaColonias = new FormTablaColonias();
+            _formTablaDireccion = new FormTablaDireccion();
+
+            pnlBD.Controls.Add(_formTablaClientes);
+            pnlBD.Controls.Add(_formTablaColonias);
+            pnlBD.Controls.Add(_formTablaDireccion);
+
+            _formTablaColonias.Hide();
+            _formTablaDireccion.Hide();
+            _formTablaClientes.Show();
+            _formActual = _formTablaClientes;
+        }
+
+        private void InicializarFiltros()
+        {
+            // cbTablas — selecciona qué tabla ver
+            cbTablas.Items.Clear();
+            cbTablas.Items.Add("Clientes");
+            cbTablas.Items.Add("Colonias");
+            cbTablas.Items.Add("Dirección");
+            cbTablas.SelectedIndex = 0;
+            cbTablas.SelectedIndexChanged += cbTablas_SelectedIndexChanged;
+
+            // cbColonia — se llena cuando se carguen datos de BD
+            cbFilColonia.Items.Clear();
+            cbFilColonia.Items.Add("Todas");
+            cbFilColonia.SelectedIndex = 0;
+
+
+            // btnBuscarC — busca por número de teléfono
+            btnBuscarC.Click += btnBuscarC_Click;
+        }
+
+        // ── EVENTOS ────────────────────────────────────────
+        private void cbTablas_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            switch (cbTablas.SelectedItem?.ToString())
+            {
+                case "Clientes":
+                    if (_formTablaClientes != null)
+                        MostrarFormEnPanel(_formTablaClientes);
+                        cbFilColonia.SelectedIndex = 0;
+                        cbFilColonia.Visible = true;
+                    break;
+                case "Colonias":
+                    if (_formTablaColonias != null)
+                        MostrarFormEnPanel(_formTablaColonias);
+                        cbFilColonia.SelectedIndex = 0;
+                        cbFilColonia.Visible = false;
+                    break;
+                case "Dirección":
+                    if (_formTablaDireccion != null)
+                        MostrarFormEnPanel(_formTablaDireccion);
+                        cbFilColonia.SelectedIndex = 0;
+                        cbFilColonia.Visible = true;
+                    break;
+            }
+        }
+
+
+        //////////// FIN DE LAS TABLAS ////////////////
+
+        // ── RESIZE DEL PANEL BOTONES ───────────────────────
+        private void pnlBotones_Resize(object sender, EventArgs e)
+        {
+            int w = pnlBotones.Width;
+            int h = pnlBotones.Height;
+            int margenH = 15;
+            int altoControl = 28;
+            int espacioPequeño = 5;
+            int espacioGrande = 20;
+
+            Label lblTablas = ObtenerLabel("lblTablas", "Tabla:");
+            Label lblColonia = ObtenerLabel("lblColonia", "Colonia:");
+
+            bool dosLineas = w < 850;
+
+            if (!dosLineas)
+            {
+                int y1 = (h / 2) - altoControl - 4;
+                int y2 = (h / 2) - 6;
+
+                lblTablas.Location = new Point(margenH, y2);        // sin el +4
+                lblTablas.Size = new Size(lblTablas.PreferredWidth, 24);
+
+                lblColonia.Location = new Point(cbTablas.Right + espacioGrande, y2);  // sin el +4
+                lblColonia.Size = new Size(lblColonia.PreferredWidth, 24);
+
+                // BUSCAR
+                lblBuscarC.Location = new Point(margenH, y1 + 4);
+                textBuscarC.Location = new Point(lblBuscarC.Right + espacioPequeño, y1);
+                textBuscarC.Size = new Size(w - lblBuscarC.Right - espacioPequeño - 35 - 2 - margenH, altoControl);
+                btnBuscarC.Location = new Point(textBuscarC.Right + 2, y1);
+                btnBuscarC.Size = new Size(35, altoControl);
+
+                // TABLAS
+                int anchoTabla = (int)((w - margenH * 2) * 0.30);
+                lblTablas.Location = new Point(margenH, y2 + 4);
+                lblTablas.Size = new Size(lblTablas.PreferredWidth, altoControl);
+                cbTablas.Location = new Point(lblTablas.Right + espacioPequeño, y2);
+                cbTablas.Size = new Size(anchoTabla, altoControl);
+
+                // COLONIA
+                lblColonia.Location = new Point(cbTablas.Right + espacioGrande, y2 + 4);
+                lblColonia.Size = new Size(lblColonia.PreferredWidth, altoControl);
+                cbFilColonia.Location = new Point(lblColonia.Right + espacioPequeño, y2);
+                cbFilColonia.Size = new Size(w - lblColonia.Right - espacioPequeño - margenH, altoControl);
+            }
+            else
+            {
+                // ── DOS LÍNEAS ──
+                int margenV = 10;
+                int anchoDisponible = w - (margenH * 2);
+                int anchoBtnBuscar = 35;
+
+                // FILA 1: BUSCAR
+                int y1 = margenV;
+                lblBuscarC.Location = new Point(margenH, y1 + 4);
+                int anchoTxtBuscar = anchoDisponible - lblBuscarC.Width - anchoBtnBuscar - 10;
+                textBuscarC.Location = new Point(lblBuscarC.Right + espacioPequeño, y1);
+                textBuscarC.Size = new Size(anchoTxtBuscar, altoControl);
+                btnBuscarC.Location = new Point(textBuscarC.Right + 2, y1);
+                btnBuscarC.Size = new Size(anchoBtnBuscar, altoControl);
+
+                // FILA 2: COMBOS
+                int y2 = y1 + altoControl + 10;
+                int anchoGrupo = (anchoDisponible - espacioGrande) / 2;
+
+                // TABLAS
+                lblTablas.Location = new Point(margenH, y2 + 4);
+                lblTablas.Size = new Size(lblTablas.PreferredWidth, altoControl);
+                cbTablas.Location = new Point(lblTablas.Right + espacioPequeño, y2);
+                cbTablas.Size = new Size(anchoGrupo - lblTablas.Width - espacioPequeño, altoControl);
+
+                // COLONIA
+                lblColonia.Location = new Point(cbTablas.Right + espacioGrande, y2 + 4);
+                lblColonia.Size = new Size(lblColonia.PreferredWidth, altoControl);
+                cbFilColonia.Location = new Point(lblColonia.Right + espacioPequeño, y2);
+                cbFilColonia.Size = new Size(w - (lblColonia.Right + espacioPequeño) - margenH, altoControl);
+            }
+
+            pnlBotones.Invalidate();
+        }
+
+
+        // Helper para crear labels dinámicos una sola vez
+        private Label ObtenerLabel(string nombre, string texto)
+        {
+            foreach (Control c in pnlBotones.Controls)
+                if (c.Name == nombre) return (Label)c;
+
+            Label lbl = new Label();
+            lbl.Name = nombre;
+            lbl.Text = texto;
+            lbl.AutoSize = false;
+            lbl.Font = new Font("Century Gothic", 12F);
+            lbl.ForeColor = Color.FromArgb(59, 109, 17);
+            pnlBotones.Controls.Add(lbl);
+            return lbl;
+        }
+        private void RedondearBoton(Button btn, PaintEventArgs e, int radio)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; // Hace que el borde se vea suave
+
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddArc(0, 0, radio, radio, 180, 90);
+                path.AddArc(btn.Width - radio, 0, radio, radio, 270, 90);
+                path.AddArc(btn.Width - radio, btn.Height - radio, radio, radio, 0, 90);
+                path.AddArc(0, btn.Height - radio, radio, radio, 90, 90);
+                path.CloseAllFigures();
+
+                // Aplicamos la región redondeada al botón
+                btn.Region = new Region(path);
+            }
+        }
+        /////////////////Fin diseño/////////////////
+
+        //Resize de los paneles para ajustar el tamaño de los internos
+        private void pnlClientes_Resize(object sender, EventArgs e)
+        {
+            int w = pnlClientes.Width;
+            int h = pnlClientes.Height;
+            int margen = 12;
+            int espacioH = 10;
+
+            int anchoIzq = (int)(w * 0.40) - margen;
+            int anchoDer = w - anchoIzq - (margen * 3) - espacioH;
+
+            // Alto del pnlBotones — más alto en pantalla pequeña para 2 filas
+            int altoBotones = w < 900 ? 110 : 75;
+
+            // PANEL FORMULARIO
+            pnlFormulario.Location = new Point(margen, margen);
+            pnlFormulario.Size = new Size(anchoIzq, h - margen * 2);
+
+            // PANEL BOTONES
+            pnlBotones.Location = new Point(anchoIzq + margen * 2, margen);
+            pnlBotones.Size = new Size(anchoDer, altoBotones);
+
+            // PANEL BD
+            int yBD = margen + altoBotones + espacioH;
+            pnlBD.Location = new Point(anchoIzq + margen * 2, yBD);
+            pnlBD.Size = new Size(anchoDer, h - yBD - margen);
+
+            pnlClientes.Invalidate();
+
+        }
+        //Fin de los resize de los paneles para ajustar el tamaño de los internos
+        //Rezise del Formulario para ajustar el tamaño de los elementos internos
+        private void pnlFormulario_Resize(object sender, EventArgs e)
+        {
+
+            int w = pnlFormulario.Width;
+            int h = pnlFormulario.Height;
+            int margen = 40;
+            int anchoInput = w - (margen * 2);
+            int altoInput = 32;
+            int altoLabel = 23;
+            int espacioEntreGrupos = 18;
+
+            // TÍTULO
+            lblTituloForm.Location = new Point(margen - 10, 15);
+
+            // NÚMERO TELEFÓNICO
+            int yNumero = 80;
+            lblNumero.Location = new Point(margen, yNumero);
+            textNumero.Location = new Point(margen, yNumero + altoLabel + 2);
+            textNumero.Size = new Size(anchoInput, altoInput);
+
+            // NOMBRE
+            int yNombre = textNumero.Bottom + espacioEntreGrupos;
+            lblNombre.Location = new Point(margen, yNombre);
+            textNombre.Location = new Point(margen, yNombre + altoLabel + 2);
+            textNombre.Size = new Size(anchoInput, altoInput);
+
+            // APELLIDO
+            int yApellido = textNombre.Bottom + espacioEntreGrupos;
+            lblApellido.Location = new Point(margen, yApellido);
+            textApellido.Location = new Point(margen, yApellido + altoLabel + 2);
+            textApellido.Size = new Size(anchoInput, altoInput);
+
+            // APODO
+            int yApodo = textApellido.Bottom + espacioEntreGrupos;
+            lblApodo.Location = new Point(margen, yApodo);
+            textApodo.Location = new Point(margen, yApodo + altoLabel + 2);
+            textApodo.Size = new Size(anchoInput, altoInput);
+
+            // DIRECCIÓN
+            int yDireccion = textApodo.Bottom + espacioEntreGrupos;
+            lblDireccion.Location = new Point(margen, yDireccion);
+
+            int anchoBuscar = 42;
+            int espacioBuscar = 8;
+
+            textDIreccion.Location = new Point(margen, yDireccion + altoLabel + 2);
+            textDIreccion.Size = new Size(anchoInput - anchoBuscar - espacioBuscar, altoInput);
+
+            btnAgregar.Location = new Point(textDIreccion.Right + espacioBuscar, textDIreccion.Top);
+            btnAgregar.Size = new Size(anchoBuscar, altoInput);
+
+            // BOTONES — pegados al fondo
+            int altoBotones = 48;
+            int espacioBtn = 10;
+            int yGuardar = h - altoBotones * 2 - espacioBtn - 30;
+            int yFilaAbajo = yGuardar + altoBotones + espacioBtn;
+            int anchoBtnPeq = (anchoInput - espacioBtn) / 2;
+
+            btnGuardar.Location = new Point(margen, yGuardar);
+            btnGuardar.Size = new Size(anchoInput, altoBotones);
+
+            btnLimpiar.Location = new Point(margen, yFilaAbajo);
+            btnLimpiar.Size = new Size(anchoBtnPeq, altoBotones);
+
+            btnEliminar.Location = new Point(margen + anchoBtnPeq + espacioBtn, yFilaAbajo);
+            btnEliminar.Size = new Size(anchoBtnPeq, altoBotones);
+
+
+
+            pnlFormulario.Invalidate();
+        }
+        //FIn del resize del Formulario para ajustar el tamaño de los elementos internos
+
+        //Redibujar el panel formulario con bordes redondeados cada vez que se pinta
+        private void pnlFormulario_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearPanel((Panel)sender, e, 15);
+        }
+
+        private void pnlBotones_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearPanel((Panel)sender, e, 15);
+        }
+
+        private void pnlBD_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearPanel((Panel)sender, e, 15);
+        }
+
+        //Fin de redibujar el panel formulario con bordes redondeados cada vez que se pinta
+
+
+        //Redibujar los botones con bordes redondeados cada vez que se pinta
+
+        private void btnGuardar_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnGuardar, e, 15);
+        }
+
+        private void btnEliminar_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnEliminar, e, 15);
+        }
+
+
+        private void btnLimpiar_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnLimpiar, e, 15);
+        }
+
+        private void btnBuscarF_Paint(object sender, PaintEventArgs e)
+        {
+            RedondearBoton(btnAgregar, e, 5);
+        }
+
+        //Fin de redibujar los botones con bordes redondeados cada vez que se pinta
+
+        //Diseño de los textbox para que tengan un texto de ejemplo y se borre al hacer click, y vuelva a aparecer si no se escribe nada
+
+        //Numero
+
+
+        private void btnAgregar_Click(object? sender, EventArgs e)
+        {
+            if (pnlMiniFormulario != null)
+            {
+                ComboBox? cb = pnlMiniFormulario.Controls["cbColonia"] as ComboBox;
+                if (cb != null) CargarColonias(cb);
+
+                pnlMiniFormulario.Visible = true;
+                pnlMiniFormulario.BringToFront();
+            }
+        }
+
+        private void btnCerrarMiniFormulario_Click(object? sender, EventArgs e)
+        {
+            if (pnlMiniFormulario != null)
+            {
+                pnlMiniFormulario.Visible = false;
+            }
+        }
+        //Fin de diseño de los textbox para que tengan un texto de ejemplo y se borre al hacer click, y vuelva a aparecer si no se escribe nada
         private void CrearMiniFormulario()
         {
             pnlMiniFormulario = new Panel();
@@ -379,7 +1000,16 @@ namespace VeloxSoft.Formularios
 
                 string nuevaColonia = txtNuevaColonia.Text.Trim();
                 CargarColonias(cbColonia);
+                var colonias = _ServicioClientes.Ver_Colonias(out string err);
+                _formTablaColonias?.CargarColonias(colonias);
 
+                // Actualizar también el filtro cbFilColonia
+                cbFilColonia.Items.Clear();
+                cbFilColonia.Items.Add(new Colonia { Id = 0, Texto = "Todas" });
+                foreach (var col in colonias)
+                    cbFilColonia.Items.Add(col);
+
+                //añadimos la nueva colonia al filtro cbFilColonia
                 for (int i = 0; i < cbColonia.Items.Count; i++)
                 {
                     if (cbColonia.Items[i].ToString() == nuevaColonia)
@@ -416,7 +1046,7 @@ namespace VeloxSoft.Formularios
                 }
 
                 // 3. Obtener el ID de la colonia seleccionada
-                ColoniaItem coloniaSeleccionada = (ColoniaItem)cbColonia.SelectedItem;
+                Colonia coloniaSeleccionada = (Colonia)cbColonia.SelectedItem;
 
                 // 4. Llamar al servicio
                 string mensaje = _ServicioClientes.Insertar_Direccion(
@@ -438,6 +1068,8 @@ namespace VeloxSoft.Formularios
                 lblMsgDireccion.Text = mensaje;
                 lblMsgDireccion.ForeColor = Color.Green;
                 CargarDirecciones();
+                var direcciones = _ServicioClientes.Ver_Direcciones(out string err);
+                _formTablaDireccion?.CargarDirecciones(direcciones);
                 LimpiarMiniFormulario();
                 pnlMiniFormulario.Visible = false;
             };
@@ -476,615 +1108,6 @@ namespace VeloxSoft.Formularios
             this.Controls.Add(pnlMiniFormulario);
             pnlMiniFormulario.BringToFront();
         }
-
-
-        //Diseño estetico de esteticos y botonoes
-
-        private void pnlMiniFormulario_MouseDown(object? sender, MouseEventArgs e)
-        {
-            if (pnlMiniFormulario == null) return;
-
-            if (e.Button == MouseButtons.Left)
-            {
-                moviendoMiniFormulario = true;
-                puntoInicioMouse = Cursor.Position;
-                puntoInicioPanel = pnlMiniFormulario.Location;
-            }
-        }
-
-        private void pnlMiniFormulario_MouseMove(object? sender, MouseEventArgs e)
-        {
-            if (!moviendoMiniFormulario || pnlMiniFormulario == null) return;
-
-            Point delta = new Point(
-                Cursor.Position.X - puntoInicioMouse.X,
-                Cursor.Position.Y - puntoInicioMouse.Y
-            );
-
-            int nuevaX = puntoInicioPanel.X + delta.X;
-            int nuevaY = puntoInicioPanel.Y + delta.Y;
-
-            int minX = pnlClientes.Left;
-            int minY = pnlClientes.Top;
-
-            int maxX = pnlClientes.Right - pnlMiniFormulario.Width;
-            int maxY = pnlClientes.Bottom - pnlMiniFormulario.Height;
-
-            if (nuevaX < minX) nuevaX = minX;
-            if (nuevaY < minY) nuevaY = minY;
-
-            if (nuevaX > maxX) nuevaX = maxX;
-            if (nuevaY > maxY) nuevaY = maxY;
-
-            pnlMiniFormulario.Location = new Point(nuevaX, nuevaY);
-        }
-
-        private void pnlMiniFormulario_MouseUp(object? sender, MouseEventArgs e)
-        {
-            moviendoMiniFormulario = false;
-        }
-
-        private void RedondearPanel(Panel p, PaintEventArgs e, int radio)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            GraphicsPath path = new GraphicsPath();
-
-            // Dibujamos el camino de las esquinas
-            path.AddArc(0, 0, radio, radio, 180, 90);
-            path.AddArc(p.Width - radio, 0, radio, radio, 270, 90);
-            path.AddArc(p.Width - radio, p.Height - radio, radio, radio, 0, 90);
-            path.AddArc(0, p.Height - radio, radio, radio, 90, 90);
-            path.CloseAllFigures();
-
-            // Aplicamos la forma al panel para que sea "físicamente" redondo
-            p.Region = new Region(path);
-
-            // Dibuja un borde sutil con el verde #A4D1A5 de tu paleta Fruit Salad
-            // Esto hace que el cuadro resalte sobre el fondo verde oscuro
-            using (Pen pen = new Pen(ColorTranslator.FromHtml("#A4D1A5"), 2))
-            {
-                e.Graphics.DrawPath(pen, path);
-            }
-
-        }
-
-        // Variables
-        private FormTablaClientes? _formTablaClientes;
-        private FormTablaColonias? _formTablaColonias;
-        private FormTablaDireccion? _formTablaDireccion;
-        private Form? _formActual;
-
-        private void MostrarFormEnPanel(Form form)
-        {
-            if (_formActual != null)
-                _formActual.Hide();
-
-            if (!pnlBD.Controls.Contains(form))
-                pnlBD.Controls.Add(form);
-
-            form.Show();
-            _formActual = form;
-        }
-
-        private void InicializarFormulariosBD()
-        {
-            _formTablaClientes = new FormTablaClientes();
-            _formTablaColonias = new FormTablaColonias();
-            _formTablaDireccion = new FormTablaDireccion();
-
-            pnlBD.Controls.Add(_formTablaClientes);
-            pnlBD.Controls.Add(_formTablaColonias);
-            pnlBD.Controls.Add(_formTablaDireccion);
-
-            _formTablaColonias.Hide();
-            _formTablaDireccion.Hide();
-            _formTablaClientes.Show();
-            _formActual = _formTablaClientes;
-        }
-
-        private void InicializarFiltros()
-        {
-            // cbTablas — selecciona qué tabla ver
-            cbTablas.Items.Clear();
-            cbTablas.Items.Add("Clientes");
-            cbTablas.Items.Add("Colonias");
-            cbTablas.Items.Add("Dirección");
-            cbTablas.SelectedIndex = 0;
-            cbTablas.SelectedIndexChanged += cbTablas_SelectedIndexChanged;
-
-            // cbColonia — se llena cuando se carguen datos de BD
-            cbColonia.Items.Clear();
-            cbColonia.Items.Add("Todas");
-            cbColonia.SelectedIndex = 0;
-            cbColonia.SelectedIndexChanged += cbColonia_SelectedIndexChanged;
-
-            // btnBuscarC — busca por número de teléfono
-            btnBuscarC.Click += btnBuscarC_Click;
-        }
-
-        // ── EVENTOS ────────────────────────────────────────
-        private void cbTablas_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            switch (cbTablas.SelectedItem?.ToString())
-            {
-                case "Clientes":
-                    if (_formTablaClientes != null)
-                        MostrarFormEnPanel(_formTablaClientes);
-                    break;
-                case "Colonias":
-                    if (_formTablaColonias != null)
-                        MostrarFormEnPanel(_formTablaColonias);
-                    break;
-                case "Dirección":
-                    if (_formTablaDireccion != null)
-                        MostrarFormEnPanel(_formTablaDireccion);
-                    break;
-            }
-        }
-
-        private void cbColonia_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            string colonia = cbColonia.SelectedItem?.ToString() ?? "Todas";
-
-            if (colonia == "Todas")
-            {
-                _formTablaClientes?.MostrarTodos();
-                _formTablaDireccion?.MostrarTodos();
-                return;
-            }
-
-            // Filtra según la tabla activa
-            if (_formActual == _formTablaClientes)
-                _formTablaClientes?.FiltrarPorColonia(colonia);
-            else if (_formActual == _formTablaDireccion)
-                _formTablaDireccion?.FiltrarPorColonia(colonia);
-        }
-
-
-        private void btnBuscarC_Click(object? sender, EventArgs e)
-        {
-            string buscar = textBuscarC.Text.Trim();
-
-            if (string.IsNullOrEmpty(buscar) || buscar == "Cliente...")
-            {
-                _formTablaClientes?.MostrarTodos();
-                return;
-            }
-
-            // Busca siempre en clientes por número
-            if (_formTablaClientes != null)
-            {
-                MostrarFormEnPanel(_formTablaClientes);
-                cbTablas.SelectedIndex = 0;
-                _formTablaClientes.FiltrarPorNumero(buscar);
-            }
-        }
-
-        //////////// FIN DE LAS TABLAS ////////////////
-
-        // ── RESIZE DEL PANEL BOTONES ───────────────────────
-        private void pnlBotones_Resize(object sender, EventArgs e)
-        {
-            int w = pnlBotones.Width;
-            int h = pnlBotones.Height;
-
-            int margenH = 15;
-            int altoControl = 28;
-
-            int espacioPequeño = 5;
-            int espacioGrande = 20;
-
-            // Labels dinámicos (NO aparecen en el diseñador)
-            Label lblTablas = ObtenerLabel("lblTablas", "Tabla:");
-            Label lblColonia = ObtenerLabel("lblColonia", "Colonia:");
-
-            // Cambia a 2 líneas cuando el panel se hace pequeño
-            bool dosLineas = w < 750;
-
-            if (!dosLineas)
-            {
-                // ───────────── UNA LÍNEA ─────────────
-                int y = (h - altoControl) / 2;
-
-                // Tamaños fijos
-                int anchoLblBuscar = lblBuscarC.PreferredWidth;
-                int anchoBtnBuscar = 35;
-
-                int anchoLblTabla = lblTablas.PreferredWidth;
-                int anchoLblColonia = lblColonia.PreferredWidth;
-
-                // Espacio restante
-                int espacioDisponible =
-                    w
-                    - (margenH * 2)
-                    - anchoLblBuscar
-                    - anchoBtnBuscar
-                    - anchoLblTabla
-                    - anchoLblColonia
-                    - (espacioPequeño * 5)
-                    - (espacioGrande * 2);
-
-                // Repartir espacio
-                int anchoBuscar = (int)(espacioDisponible * 0.35);
-                int anchoTabla = (int)(espacioDisponible * 0.22);
-                int anchoColonia = espacioDisponible - anchoBuscar - anchoTabla;
-
-                // ─── BUSCAR ───
-                lblBuscarC.Location = new Point(margenH, y + 4);
-
-                textBuscarC.Location = new Point(
-                    lblBuscarC.Right + espacioPequeño,
-                    y
-                );
-
-                textBuscarC.Size = new Size(anchoBuscar, altoControl);
-
-                btnBuscarC.Location = new Point(
-                    textBuscarC.Right + 2,
-                    y
-                );
-
-                btnBuscarC.Size = new Size(anchoBtnBuscar, altoControl);
-
-                // ─── TABLAS ───
-                lblTablas.Location = new Point(
-                    btnBuscarC.Right + espacioGrande,
-                    y + 4
-                );
-
-                cbTablas.Location = new Point(
-                    lblTablas.Right + espacioPequeño,
-                    y
-                );
-
-                cbTablas.Size = new Size(anchoTabla, altoControl);
-
-                // ─── COLONIA ───
-                lblColonia.Location = new Point(
-                    cbTablas.Right + espacioGrande,
-                    y + 4
-                );
-
-                cbColonia.Location = new Point(
-                    lblColonia.Right + espacioPequeño,
-                    y
-                );
-
-                cbColonia.Size = new Size(
-                    w - cbColonia.Left - margenH,
-                    altoControl
-                );
-            }
-            else
-            {
-                // ───────────── DOS LÍNEAS ─────────────
-                int margenV = 10;
-
-                int anchoDisponible = w - (margenH * 2);
-
-                int anchoBtnBuscar = 35;
-
-                // ─── FILA 1 : BUSCAR ───
-                int y1 = margenV;
-
-                lblBuscarC.Location = new Point(
-                    margenH,
-                    y1 + 4
-                );
-
-                int anchoTxtBuscar =
-                    anchoDisponible
-                    - lblBuscarC.Width
-                    - anchoBtnBuscar
-                    - 10;
-
-                textBuscarC.Location = new Point(
-                    lblBuscarC.Right + espacioPequeño,
-                    y1
-                );
-
-                textBuscarC.Size = new Size(
-                    anchoTxtBuscar,
-                    altoControl
-                );
-
-                btnBuscarC.Location = new Point(
-                    textBuscarC.Right + 2,
-                    y1
-                );
-
-                btnBuscarC.Size = new Size(
-                    anchoBtnBuscar,
-                    altoControl
-                );
-
-                // ─── FILA 2 : COMBOS ───
-                int y2 = y1 + altoControl + 10;
-
-                int anchoGrupo =
-                    (anchoDisponible - espacioGrande) / 2;
-
-                // TABLAS
-                lblTablas.Location = new Point(
-                    margenH,
-                    y2 + 4
-                );
-
-                cbTablas.Location = new Point(
-                    lblTablas.Right + espacioPequeño,
-                    y2
-                );
-
-                cbTablas.Size = new Size(
-                    anchoGrupo - lblTablas.Width - espacioPequeño,
-                    altoControl
-                );
-
-                // COLONIA
-                lblColonia.Location = new Point(
-                    cbTablas.Right + espacioGrande,
-                    y2 + 4
-                );
-
-                cbColonia.Location = new Point(
-                    lblColonia.Right + espacioPequeño,
-                    y2
-                );
-
-                cbColonia.Size = new Size(
-                    w - cbColonia.Left - margenH,
-                    altoControl
-                );
-            }
-
-            pnlBotones.Invalidate();
-        }
-
-
-        // Helper para crear labels dinámicos una sola vez
-        private Label ObtenerLabel(string nombre, string texto)
-        {
-            foreach (Control c in pnlBotones.Controls)
-                if (c.Name == nombre) return (Label)c;
-
-            Label lbl = new Label();
-            lbl.Name = nombre;
-            lbl.Text = texto;
-            lbl.AutoSize = false;
-            lbl.Font = new Font("Century Gothic", 12F);
-            lbl.ForeColor = Color.FromArgb(59, 109, 17);
-            pnlBotones.Controls.Add(lbl);
-            return lbl;
-        }
-
-
-
-        private void RedondearBoton(Button btn, PaintEventArgs e, int radio)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; // Hace que el borde se vea suave
-
-            using (GraphicsPath path = new GraphicsPath())
-            {
-                path.AddArc(0, 0, radio, radio, 180, 90);
-                path.AddArc(btn.Width - radio, 0, radio, radio, 270, 90);
-                path.AddArc(btn.Width - radio, btn.Height - radio, radio, radio, 0, 90);
-                path.AddArc(0, btn.Height - radio, radio, radio, 90, 90);
-                path.CloseAllFigures();
-
-                // Aplicamos la región redondeada al botón
-                btn.Region = new Region(path);
-            }
-        }
-
-
-        /////////////////Fin diseño/////////////////
-
-        //Resize de los paneles para ajustar el tamaño de los internos
-        private void pnlClientes_Resize(object sender, EventArgs e)
-        {
-            int w = pnlClientes.Width;
-            int h = pnlClientes.Height;
-            int margen = 12;
-            int espacioH = 10;
-
-            int anchoIzq = (int)(w * 0.40) - margen;
-            int anchoDer = w - anchoIzq - (margen * 3) - espacioH;
-
-            // Alto del pnlBotones — más alto en pantalla pequeña para 2 filas
-            int altoBotones = anchoDer < 600 ? 110 : 60;
-
-            // PANEL FORMULARIO
-            pnlFormulario.Location = new Point(margen, margen);
-            pnlFormulario.Size = new Size(anchoIzq, h - margen * 2);
-
-            // PANEL BOTONES
-            pnlBotones.Location = new Point(anchoIzq + margen * 2, margen);
-            pnlBotones.Size = new Size(anchoDer, altoBotones);
-
-            // PANEL BD
-            int yBD = margen + altoBotones + espacioH;
-            pnlBD.Location = new Point(anchoIzq + margen * 2, yBD);
-            pnlBD.Size = new Size(anchoDer, h - yBD - margen);
-
-            pnlClientes.Invalidate();
-
-        }
-
-
-
-        //Fin de los resize de los paneles para ajustar el tamaño de los internos
-
-        //Rezise del Formulario para ajustar el tamaño de los elementos internos
-
-        private void pnlFormulario_Resize(object sender, EventArgs e)
-        {
-
-            int w = pnlFormulario.Width;
-            int h = pnlFormulario.Height;
-            int margen = 40;
-            int anchoInput = w - (margen * 2);
-            int altoInput = 32;
-            int altoLabel = 23;
-            int espacioEntreGrupos = 18;
-
-            // TÍTULO
-            lblTituloForm.Location = new Point(margen - 10, 15);
-
-            // NÚMERO TELEFÓNICO
-            int yNumero = 80;
-            lblNumero.Location = new Point(margen, yNumero);
-            textNumero.Location = new Point(margen, yNumero + altoLabel + 2);
-            textNumero.Size = new Size(anchoInput, altoInput);
-
-            // NOMBRE
-            int yNombre = textNumero.Bottom + espacioEntreGrupos;
-            lblNombre.Location = new Point(margen, yNombre);
-            textNombre.Location = new Point(margen, yNombre + altoLabel + 2);
-            textNombre.Size = new Size(anchoInput, altoInput);
-
-            // APELLIDO
-            int yApellido = textNombre.Bottom + espacioEntreGrupos;
-            lblApellido.Location = new Point(margen, yApellido);
-            textApellido.Location = new Point(margen, yApellido + altoLabel + 2);
-            textApellido.Size = new Size(anchoInput, altoInput);
-
-            // APODO
-            int yApodo = textApellido.Bottom + espacioEntreGrupos;
-            lblApodo.Location = new Point(margen, yApodo);
-            textApodo.Location = new Point(margen, yApodo + altoLabel + 2);
-            textApodo.Size = new Size(anchoInput, altoInput);
-
-            // DIRECCIÓN
-            int yDireccion = textApodo.Bottom + espacioEntreGrupos;
-            lblDireccion.Location = new Point(margen, yDireccion);
-
-            int anchoBuscar = 42;
-            int espacioBuscar = 8;
-
-            textDIreccion.Location = new Point(margen, yDireccion + altoLabel + 2);
-            textDIreccion.Size = new Size(anchoInput - anchoBuscar - espacioBuscar, altoInput);
-
-            btnAgregar.Location = new Point(textDIreccion.Right + espacioBuscar, textDIreccion.Top);
-            btnAgregar.Size = new Size(anchoBuscar, altoInput);
-
-            // BOTONES — pegados al fondo
-            int altoBotones = 48;
-            int espacioBtn = 10;
-            int yGuardar = h - altoBotones * 2 - espacioBtn - 30;
-            int yFilaAbajo = yGuardar + altoBotones + espacioBtn;
-            int anchoBtnPeq = (anchoInput - espacioBtn) / 2;
-
-            btnGuardar.Location = new Point(margen, yGuardar);
-            btnGuardar.Size = new Size(anchoInput, altoBotones);
-
-            btnLimpiar.Location = new Point(margen, yFilaAbajo);
-            btnLimpiar.Size = new Size(anchoBtnPeq, altoBotones);
-
-            btnEliminar.Location = new Point(margen + anchoBtnPeq + espacioBtn, yFilaAbajo);
-            btnEliminar.Size = new Size(anchoBtnPeq, altoBotones);
-
-
-
-            pnlFormulario.Invalidate();
-        }
-
-
-        //FIn del resize del Formulario para ajustar el tamaño de los elementos internos
-
-
-
-
-        //Redibujar el panel formulario con bordes redondeados cada vez que se pinta
-        private void pnlFormulario_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearPanel((Panel)sender, e, 15);
-        }
-
-        private void pnlBotones_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearPanel((Panel)sender, e, 15);
-        }
-
-        private void pnlBD_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearPanel((Panel)sender, e, 15);
-        }
-
-        //Fin de redibujar el panel formulario con bordes redondeados cada vez que se pinta
-
-
-        //Redibujar los botones con bordes redondeados cada vez que se pinta
-
-        private void btnGuardar_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnGuardar, e, 15);
-        }
-
-        private void btnEliminar_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnEliminar, e, 15);
-        }
-
-
-        private void btnLimpiar_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnLimpiar, e, 15);
-        }
-
-        private void btnBuscarF_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnAgregar, e, 5);
-        }
-
-        //Fin de redibujar los botones con bordes redondeados cada vez que se pinta
-
-        //Diseño de los textbox para que tengan un texto de ejemplo y se borre al hacer click, y vuelva a aparecer si no se escribe nada
-
-        //Numero
-
-
-        private void btnAgregar_Click(object? sender, EventArgs e)
-        {
-            if (pnlMiniFormulario != null)
-            {
-                ComboBox? cb = pnlMiniFormulario.Controls["cbColonia"] as ComboBox;
-                if (cb != null) CargarColonias(cb);
-
-                pnlMiniFormulario.Visible = true;
-                pnlMiniFormulario.BringToFront();
-            }
-        }
-
-        private void btnCerrarMiniFormulario_Click(object? sender, EventArgs e)
-        {
-            if (pnlMiniFormulario != null)
-            {
-                pnlMiniFormulario.Visible = false;
-            }
-        }
-
-        private void textDIreccion_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (textDIreccion.SelectedItem is DireccionItem seleccionada)
-            {
-                MessageBox.Show($"ID: {seleccionada.Id}\nTexto: {seleccionada.Texto}");
-            }
-        }
-
-        private void textNumero_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnBuscarC_Paint(object sender, PaintEventArgs e)
-        {
-            RedondearBoton(btnBuscarC, e, 5);
-        }
-
-
-
-
-        //Fin de diseño de los textbox para que tengan un texto de ejemplo y se borre al hacer click, y vuelva a aparecer si no se escribe nada
 
 
     }
