@@ -13,6 +13,16 @@ namespace VeloxSoft.Formularios
         private bool _modoEdicion = false;
         private bool _MostrarContrasenia = false;
 
+        public FormUsuarios(ServicioUsuarios servicioUsuarios)
+        {
+            _ServicioUsuarios = servicioUsuarios;
+            InitializeComponent();
+            pnlUsuarios_Resize(this, EventArgs.Empty); // ← AGREGA
+            pnlFormulario_Resize(this, EventArgs.Empty);
+            pnlBotones_Resize(this, EventArgs.Empty);
+            pnlBD_Resize(this, EventArgs.Empty);
+        }
+
         // Logica de funcionamiento, no mezclar codigo de diseño con codigo de logica
         private void CargarUsuarios()
         {
@@ -323,15 +333,7 @@ namespace VeloxSoft.Formularios
         }
 
         // Fin logica de funcionamiento
-        public FormUsuarios(ServicioUsuarios servicioUsuarios)
-        {
-            _ServicioUsuarios = servicioUsuarios;
-            InitializeComponent();
-            pnlUsuarios_Resize(this, EventArgs.Empty); // ← AGREGA
-            pnlFormulario_Resize(this, EventArgs.Empty);
-            pnlBotones_Resize(this, EventArgs.Empty);
-            pnlBD_Resize(this, EventArgs.Empty);
-        }
+
 
         //Diseño estetico de esteticos y botonoes
 
