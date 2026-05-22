@@ -5,19 +5,23 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
+using VeloxSoft.Services;
+
 
 namespace VeloxSoft.Formularios
 {
     public partial class FormVentas : Form
     {
+        private readonly ServicioVentas _ServicioVentas;
         // Lista maestra — nunca se toca al filtrar
         private List<object[]> _datosVentas = new List<object[]>();
         private FormDetallesVentas _formDetalle;
         private Button btnCerrarDetalle = new Button(); // ← ya no usa new dentro del constructor
         private bool _controlesListos = false;
 
-        public FormVentas()
+        public FormVentas(ServicioVentas servicioVentas)
         {
+            _ServicioVentas = servicioVentas;
             InitializeComponent();
             InicializarColumnaEstado();
             CargarDatosPrueba();
