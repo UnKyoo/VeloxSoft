@@ -11,13 +11,24 @@ namespace VeloxSoft.Formularios
 {
     public partial class FormTablaClientes : Form
     {
-            public FormTablaClientes()
+        public event EventHandler<Cliente>? ClienteSeleccionado;
+        public FormTablaClientes()
+        {
+            InitializeComponent();
+            this.TopLevel = false;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.Dock = DockStyle.Fill;
+
+            // Creamos el 
+            dgvClientes.CellDoubleClick += (s, e) =>
             {
-                InitializeComponent();
-                this.TopLevel = false;
-                this.FormBorderStyle = FormBorderStyle.None;
-                this.Dock = DockStyle.Fill;
-            }
+                if (e.RowIndex < 0) return;
+                var fila = dgvClientes.Rows[e.RowIndex];
+                var cliente = fila.Tag as Cliente;
+                if (cliente == null) return;
+                ClienteSeleccionado?.Invoke(this, cliente);
+            };
+        }
 
         //LÓGICA (GIL)
 
@@ -28,36 +39,39 @@ namespace VeloxSoft.Formularios
 
             foreach (var cliente in lista)
             {
-                dgvClientes.Rows.Add(
+                int index = dgvClientes.Rows.Add(
                     cliente.IdCliente,
                     cliente.Nombre,
                     cliente.Apellido,
                     cliente.Apodo,
                     cliente.Direccion);
+                dgvClientes.Rows[index].Tag = cliente; // objeto completo con IdDireccion
+
+
             }
         }
- 
+
         //DISEÑO (ARMANDO)
         public DataGridView Tabla => dgvClientes;
 
-            public void FiltrarPorNumero(string numero)
+        public void FiltrarPorNumero(string numero)
+        {
+            foreach (DataGridViewRow row in dgvClientes.Rows)
             {
-                foreach (DataGridViewRow row in dgvClientes.Rows)
-                {
-                    if (row.IsNewRow)
-                        continue;
+                if (row.IsNewRow)
+                    continue;
 
-                    string texto = row.Cells["Numero"].Value?.ToString() ?? "";
+                string texto = row.Cells["Numero"].Value?.ToString() ?? "";
 
-                    row.Visible =
-                        texto.IndexOf(numero, StringComparison.OrdinalIgnoreCase) >= 0;
-                }
-             }
-
-        public void MostrarTodos()
-            {
-                foreach (DataGridViewRow row in dgvClientes.Rows)
-                    if (!row.IsNewRow) row.Visible = true;
+                row.Visible =
+                    texto.IndexOf(numero, StringComparison.OrdinalIgnoreCase) >= 0;
             }
         }
+
+        public void MostrarTodos()
+        {
+            foreach (DataGridViewRow row in dgvClientes.Rows)
+                if (!row.IsNewRow) row.Visible = true;
+        }
     }
+}

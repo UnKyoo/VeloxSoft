@@ -29,9 +29,10 @@ namespace VeloxSoft.Services
                 SELECT 
                     c.id_cel,
                     c.nombre,
-                    c.apellido,
+                    c.apellido, 
                     c.apodo,
-                    d.num_casa || ' ' || d.calle || ' x ' || d.cruzamientos || ', ' || col.colonia AS direccion
+                    d.num_casa || ' ' || d.calle || ' x ' || d.cruzamientos || ', ' || col.colonia AS direccion,
+                    d.id_direc  
                 FROM tbl_cliente c
                 INNER JOIN tbl_direccion d ON c.direccion_c = d.id_direc
                 INNER JOIN tbl_colonia col ON d.colonia_d = col.idcolonia
@@ -67,7 +68,8 @@ namespace VeloxSoft.Services
                         Nombre = reader.GetString(1),
                         Apellido = reader.GetString(2),
                         Apodo = reader.GetString(3),
-                        Direccion = reader.GetString(4)
+                        Direccion = reader.GetString(4),
+                        IdDireccion = reader.GetInt32(5)
                     });
                 }
 
@@ -292,6 +294,38 @@ namespace VeloxSoft.Services
             {
                 errorMessage = "Error inesperado G.";
                 return new List<Direccion>();
+            }
+        }
+
+        public string Modificar_Cliente(long idCel, string apodo, int idDireccion, out string errorMessage)
+        {
+            errorMessage = null;
+            try
+            {
+                using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
+                conn.Open();
+
+                using var cmd = new NpgsqlCommand(
+                    "SELECT modificar_cliente(@idCel, @idCel, @apodo, @idDireccion)", conn);
+                cmd.Parameters.AddWithValue("idCel", idCel);
+                cmd.Parameters.AddWithValue("apodo", apodo);
+                cmd.Parameters.AddWithValue("idDireccion", idDireccion);
+
+                string resultado = cmd.ExecuteScalar().ToString();
+                var parts = resultado.Split('|');
+
+                if (parts[0] == "ERROR")
+                    errorMessage = parts[1];
+
+                return parts[1];
+            }
+            catch (PostgresException)
+            {
+                return errorMessage = "Error inesperado PG.";
+            }
+            catch (Exception)
+            {
+                return errorMessage = "Error inesperado G.";
             }
         }
     }

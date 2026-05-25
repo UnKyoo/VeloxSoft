@@ -11,5 +11,6 @@ namespace VeloxSoft.Models
         public string Apellido { get; set; }
         public string Apodo { get; set; }
         public string Direccion { get; set; } // Texto concatenado desde la BD
+        public int IdDireccion { get; set; }
     }
 }
