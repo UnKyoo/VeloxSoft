@@ -23,7 +23,7 @@ namespace VeloxSoft.Formularios
             LabelSalir.BringToFront();
             _autenticarUsuario = autenticarUsuario;
             // Contraseña oculta al iniciar
-            TxtPassword.UseSystemPasswordChar = false;
+            TxtPassword.UseSystemPasswordChar = true;
             // Icono inicial
             pbViewPassword.Image = Properties.Resources.Not_view;
         }
@@ -128,12 +128,12 @@ namespace VeloxSoft.Formularios
 
             if (_MostrarContrasenia)
             {
-                TxtPassword.UseSystemPasswordChar = false;
+                TxtPassword.UseSystemPasswordChar = true;
                 pbViewPassword.Image = Properties.Resources.Not_view;
             }
             else
             {
-                TxtPassword.UseSystemPasswordChar = true;
+                TxtPassword.UseSystemPasswordChar = false;
                 pbViewPassword.Image = Properties.Resources.View;
             }
         }

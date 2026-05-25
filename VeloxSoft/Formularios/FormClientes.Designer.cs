@@ -144,7 +144,7 @@
             textBuscarC.Location = new Point(127, 8);
             textBuscarC.Name = "textBuscarC";
             textBuscarC.PlaceholderText = "9993546646";
-            textBuscarC.Size = new Size(142, 32);
+            textBuscarC.Size = new Size(142, 27);
             textBuscarC.TabIndex = 54;
             // 
             // lblBuscarC
@@ -154,7 +154,7 @@
             lblBuscarC.ForeColor = Color.FromArgb(59, 109, 17);
             lblBuscarC.Location = new Point(16, 11);
             lblBuscarC.Name = "lblBuscarC";
-            lblBuscarC.Size = new Size(95, 25);
+            lblBuscarC.Size = new Size(78, 21);
             lblBuscarC.TabIndex = 53;
             lblBuscarC.Text = "Cliente:";
             // 
@@ -192,7 +192,7 @@
             textDIreccion.FormattingEnabled = true;
             textDIreccion.Location = new Point(84, 360);
             textDIreccion.Name = "textDIreccion";
-            textDIreccion.Size = new Size(300, 28);
+            textDIreccion.Size = new Size(300, 25);
             textDIreccion.TabIndex = 56;
             textDIreccion.SelectedIndexChanged += textDIreccion_SelectedIndexChanged;
             // 
@@ -289,7 +289,7 @@
             textApodo.MaxLength = 30;
             textApodo.Name = "textApodo";
             textApodo.PlaceholderText = "Apodo...";
-            textApodo.Size = new Size(300, 32);
+            textApodo.Size = new Size(300, 27);
             textApodo.TabIndex = 47;
             textApodo.KeyPress += textApodo_KeyPress;
             // 
@@ -313,7 +313,7 @@
             textApellido.MaxLength = 50;
             textApellido.Name = "textApellido";
             textApellido.PlaceholderText = "Apellido...";
-            textApellido.Size = new Size(300, 32);
+            textApellido.Size = new Size(300, 27);
             textApellido.TabIndex = 45;
             textApellido.KeyPress += textApellido_KeyPress;
             // 
@@ -337,7 +337,7 @@
             textNombre.MaxLength = 50;
             textNombre.Name = "textNombre";
             textNombre.PlaceholderText = "Cliente...";
-            textNombre.Size = new Size(300, 32);
+            textNombre.Size = new Size(300, 27);
             textNombre.TabIndex = 43;
             textNombre.KeyPress += textNombre_KeyPress;
             // 
@@ -361,7 +361,7 @@
             textNumero.MaxLength = 10;
             textNumero.Name = "textNumero";
             textNumero.PlaceholderText = "9993546646";
-            textNumero.Size = new Size(300, 32);
+            textNumero.Size = new Size(300, 27);
             textNumero.TabIndex = 41;
             textNumero.KeyPress += textNumero_KeyPress;
             // 

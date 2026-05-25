@@ -16,11 +16,14 @@ namespace VeloxSoft.Formularios
         private Panel? pnlMiniFormulario;
         private Panel? pnlBarraMiniFormulario;
         private Button? btnCerrarMiniFormulario;
+       
 
         private bool moviendoMiniFormulario = false;
         private Point puntoInicioMouse;
         private Point puntoInicioPanel;
         private readonly ServicioClientes _ServicioClientes;
+        private bool _modoEdicion = false; // false = modo agregar, true = modo editar
+        private long _idClienteEditando = 0;
         public FormClientes(ServicioClientes servicioClientes)
         {
             _ServicioClientes = servicioClientes;
@@ -64,14 +67,46 @@ namespace VeloxSoft.Formularios
             cbFilColonia.SelectedIndex = 0;
             cbFilColonia.SelectedIndexChanged += cbColonia_SelectedIndexChanged_1;
         }
+        // ActualizarCliente para actualizar clientes
+        private void ActualizarCliente()
+        {
+            if (textDIreccion.SelectedItem == null)
+            {
+                ImprimirError("Selecciona una dirección.");
+                return;
+            }
 
+            Direccion direccion = (Direccion)textDIreccion.SelectedItem;
+            string apodo = textApodo.Text.Trim();
+
+            string mensaje = _ServicioClientes.Modificar_Cliente(
+                _idClienteEditando,
+                apodo,
+                direccion.Id,
+                out string errorMessage);
+
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                ImprimirError(errorMessage);
+                return;
+            }
+
+            LabelError.Text = mensaje;
+            LabelError.ForeColor = Color.Green;
+            LabelError.Visible = true;
+
+            var lista = _ServicioClientes.Ver_Clientes(out string err);
+            _formTablaClientes?.CargarClientes(lista);
+
+            LimpiarCampos();
+        }
         private void ImprimirError(string mensaje)
         {
             LabelError.Text = mensaje;
             LabelError.ForeColor = Color.Red;
             LabelError.Visible = true;
         }   
-
+        // limpieza de todo lo del mini formulario grasias claude
         private void LimpiarMiniFormulario()
         {
             if (pnlMiniFormulario == null) return;
@@ -145,7 +180,6 @@ namespace VeloxSoft.Formularios
         //fin de sanitización y validacion.
 
         //método para cargar direcciones en el combobox
-
         private void CargarDirecciones()
         {
             var lista = _ServicioClientes.Ver_Direcciones(out string errorMessage);
@@ -164,7 +198,6 @@ namespace VeloxSoft.Formularios
         }
 
         //Método para cargar colonias en el combobox del mini formulario
-
         private void CargarColonias(ComboBox cb)
         {
             var lista = _ServicioClientes.Ver_Colonias(out string errorMessage);
@@ -176,7 +209,6 @@ namespace VeloxSoft.Formularios
 
             cb.SelectedIndex = -1;
         }
-
         //Metodo para llamar al filtro dentro del cbFILColonia y en el botonBuscar
         private void BusquedaCliente()
         {
@@ -205,7 +237,7 @@ namespace VeloxSoft.Formularios
             }
             else if (tablaActual == "Dirección")
             {
-                // ¡Aquí está el cambio! Usamos el método filtrado que acabamos de ajustar (retorna List<Direccion>)
+                // llamamos al método específico para direcciones que retorna List<Direccion> y acepta filtro de colonia
                 var listaDirecciones = _ServicioClientes.Ver_Direcciones(out string errorMessage, id, colonia);
 
                 if (!string.IsNullOrEmpty(errorMessage))
@@ -218,38 +250,36 @@ namespace VeloxSoft.Formularios
                 _formTablaDireccion?.CargarDirecciones(listaDirecciones);
             }
         }
-
-     
-
         //Boton de guardar para añadir y/o actualizar clientes
         private void btnGuardar_Click(object sender, EventArgs e)
         {
+            // si es verdadero actualizamos, si no sigue el flujo de insercion normal
+            if (_modoEdicion)
+            {
+                ActualizarCliente();//método para actualizar más arriba esta.
+                return;
+            }
+
             // 1. Validar campos vacíos
             if (string.IsNullOrWhiteSpace(textNumero.Text)  ||
                 string.IsNullOrWhiteSpace(textNombre.Text) ||
                 string.IsNullOrWhiteSpace(textApellido.Text))
             {
-                LabelError.Text = "Teléfono, nombre y apellido son obligatorios.";
-                LabelError.ForeColor = Color.Red;
-                LabelError.Visible = true;
+                ImprimirError("Teléfono, nombre y apellido son obligatorios.");
                 return;
             }
 
             // 2. Validar que el teléfono tenga exactamente 10 dígitos
             if (textNumero.Text.Length != 10)
             {
-                LabelError.Text = "El número telefónico debe tener 10 dígitos.";
-                LabelError.ForeColor = Color.Red;
-                LabelError.Visible = true;
+                ImprimirError("El número telefónico debe tener 10 dígitos.");
                 return;
             }
 
             // 3. Validar que haya dirección seleccionada
             if (textDIreccion.SelectedItem == null)
             {
-                LabelError.Text = "Selecciona una dirección.";
-                LabelError.ForeColor = Color.Red;
-                LabelError.Visible = true;
+                ImprimirError("Selecciona una dirección.");
                 return;
             }
 
@@ -257,7 +287,7 @@ namespace VeloxSoft.Formularios
             long idCel = long.Parse(textNumero.Text.Trim());
             string nombre = textNombre.Text.Trim();
             string apellido = textApellido.Text.Trim();
-            string apodo = textApodo.Text == "Apodo..." ? "" : textApodo.Text.Trim();
+            string apodo = textApodo.Text.Trim();
             Direccion direccion = (Direccion)textDIreccion.SelectedItem;
 
             // 5. Llamar al servicio
@@ -307,6 +337,21 @@ namespace VeloxSoft.Formularios
 
             LabelError.Text = "";
             LabelError.Visible = false;
+
+            _modoEdicion = false;
+            _idClienteEditando = 0;
+
+            textNumero.ReadOnly = false;
+            textNombre.ReadOnly = false;
+            textApellido.ReadOnly = false;
+            textApodo.ReadOnly = false;
+            textNumero.BackColor = Color.FromArgb(250, 254, 247);
+            textNombre.BackColor = Color.FromArgb(250, 254, 247);
+            textApellido.BackColor = Color.FromArgb(250, 254, 247);
+            textApodo.BackColor = Color.FromArgb(250, 254, 247);
+
+            btnGuardar.Text = "Guardar";
+            btnGuardar.BackColor = Color.FromArgb(59, 109, 17);
         }
 
         private void textDIreccion_SelectedIndexChanged(object sender, EventArgs e)
@@ -316,17 +361,16 @@ namespace VeloxSoft.Formularios
                 MessageBox.Show($"ID: {seleccionada.Id}\n{seleccionada}");
             }*/
         }
-
+        //Botón limpiar para limpiar campos
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
         }
-
+        //evento para buscar clientes por número de teléfono o por colonia, dependiendo de lo que el usuario haya ingresado en el campo de búsqueda y la selección del filtro de colonia. Este evento se activa al hacer clic en el botón de búsqueda.
         private void btnBuscarC_Click(object? sender, EventArgs e)
         {
             BusquedaCliente();
         }
-
         //---------------------- DISEÑO ARMANDO ---------------------------------
 
         //Diseño de estetica y botonoes
@@ -431,6 +475,41 @@ namespace VeloxSoft.Formularios
             _formTablaDireccion.Hide();
             _formTablaClientes.Show();
             _formActual = _formTablaClientes;
+            
+            //Evento del formulario
+            _formTablaClientes.ClienteSeleccionado += (s, cliente) =>
+            {
+                _modoEdicion = true;
+                _idClienteEditando = cliente.IdCliente;
+
+                // Rellenar campos
+                textNumero.Text = cliente.IdCliente.ToString();
+                textNombre.Text = cliente.Nombre;
+                textApellido.Text = cliente.Apellido;
+                textApodo.Text = cliente.Apodo;
+
+                // Seleccionar dirección por IdDireccion
+                for (int i = 0; i < textDIreccion.Items.Count; i++)
+                {
+                    if (textDIreccion.Items[i] is Direccion dir && dir.Id == cliente.IdDireccion)
+                    {
+                        textDIreccion.SelectedIndex = i;
+                        break;
+                    }
+                }
+
+                // Bloquear todo menos apodo y dirección
+                textNumero.ReadOnly = true;
+                textNombre.ReadOnly = true;
+                textApellido.ReadOnly = true;
+                textNumero.BackColor = Color.FromArgb(220, 220, 220);
+                textNombre.BackColor = Color.FromArgb(220, 220, 220);
+                textApellido.BackColor = Color.FromArgb(220, 220, 220);
+
+                // Cambiar botón guardar
+                btnGuardar.Text = "Actualizar";
+                btnGuardar.BackColor = Color.FromArgb(30, 90, 160);
+            };
         }
 
         private void InicializarFiltros()
