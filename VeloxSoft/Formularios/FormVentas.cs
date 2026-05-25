@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
+using VeloxSoft.Models;
 using VeloxSoft.Services;
 
 
@@ -13,8 +14,9 @@ namespace VeloxSoft.Formularios
     public partial class FormVentas : Form
     {
         private readonly ServicioVentas _ServicioVentas;
+        private bool _cargando = false;
+        private bool _revirtiendo = false;
         // Lista maestra — nunca se toca al filtrar
-        private List<object[]> _datosVentas = new List<object[]>();
         private FormDetallesVentas _formDetalle;
         private Button btnCerrarDetalle = new Button(); // ← ya no usa new dentro del constructor
         private bool _controlesListos = false;
@@ -24,7 +26,6 @@ namespace VeloxSoft.Formularios
             _ServicioVentas = servicioVentas;
             InitializeComponent();
             InicializarColumnaEstado();
-            CargarDatosPrueba();
             dgvVentas.CellFormatting += dgvVentas_CellFormatting;
             dgvVentas.CellDoubleClick += dgvVentas_CellDoubleClick;
 
@@ -37,8 +38,8 @@ namespace VeloxSoft.Formularios
             // pero si quieres ser explícito:
             textBuscarU.Visible = true;
             textBuscarN.Visible = true;
-            lblBuscarU.Visible = true;
-            lblBuscarN.Visible = true;
+            lblNVenta.Visible = true;
+            lblNCliente.Visible = true;
 
             checkFecha.CheckedChanged += checkFecha_CheckedChanged;
             btnFiltrar.Click += btnFiltrar_Click;
@@ -73,19 +74,120 @@ namespace VeloxSoft.Formularios
             pnlFormulario_Resize(this, EventArgs.Empty);
         }
 
+        // Logica de funcionamiento
 
-        private void CargarDatosPrueba()
+        private void CargarVentas()
         {
-            // Guarda en la lista maestra
-            _datosVentas.Add(new object[] { "3", "$1,200", "19/05/2025", "999-0001", "Efectivo", "Entregado", "C-01", "Admin" });
-            _datosVentas.Add(new object[] { "1", "$350", "19/05/2025", "999-0002", "Tarjeta", "Pendiente", "C-02", "Admin" });
-            _datosVentas.Add(new object[] { "5", "$4,750", "18/05/2025", "999-0003", "Transferencia", "Entregado", "C-01", "Juan" });
-            _datosVentas.Add(new object[] { "2", "$890", "18/05/2025", "999-0004", "Efectivo", "Pendiente", "C-03", "Juan" });
-            _datosVentas.Add(new object[] { "4", "$2,100", "17/05/2025", "999-0005", "Tarjeta", "Entregado", "C-02", "Admin" });
+            _cargando = true;
+            List<Venta> Ventas = _ServicioVentas.Buscar_Ventas(
+                textBuscarU.Text,   // NVenta
+                textBuscarN.Text,   // NCliente
+                cmbEstado.Text,     // Estado
+                checkFecha.Checked ? dtpDesde.Value.ToString("yyyy-MM-dd") : null,
+                checkFecha.Checked ? dtpHasta.Value.ToString("yyyy-MM-dd") : null,
+                out string errorMessage
+            );
+            dgvVentas.Rows.Clear();
 
-            RenderizarGrid(_datosVentas);
+            foreach (var Venta in Ventas)
+            {
+                int index = dgvVentas.Rows.Add(
+                    Venta.IdVenta,
+                    Venta.NumCel,
+                    Venta.Cantidad.ToString("F3"),
+                    $"${Venta.Importe.ToString("F2")}",
+                    Venta.TipoDePago,
+                    Venta.IdCorte?.ToString() ?? "Sin corte",
+                    Venta.IdUsuario,
+                    Venta.Fecha.ToString("yyyy-MM-dd")
+                );
+
+                DataGridViewComboBoxCell comboCell = (DataGridViewComboBoxCell)dgvVentas.Rows[index].Cells["colEstado"];
+                comboCell.Value = Venta.Estado;
+                dgvVentas.Rows[index].Tag = Venta.Estado;
+
+                if (Venta.Estado == "Entregado")
+                    dgvVentas.Rows[index].ReadOnly = true;
+            }
+
+            _cargando = false;
         }
 
+
+        private void FormVentas_Load(object sender, EventArgs e)
+        {
+            CargarVentas();
+        }
+        private void dgvVentas_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dgvVentas.CurrentCell?.OwningColumn.Name == "colEstado")
+                dgvVentas.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+        private void dgvVentas_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_cargando || _revirtiendo) return;
+
+            if (dgvVentas.Columns[e.ColumnIndex].Name == "colEstado" && e.RowIndex >= 0)
+            {
+                string nuevoEstado = dgvVentas.Rows[e.RowIndex].Cells["colEstado"].Value?.ToString();
+                string estadoAnterior = dgvVentas.Rows[e.RowIndex].Tag?.ToString(); // guardamos el anterior
+                long idVenta = (long)dgvVentas.Rows[e.RowIndex].Cells["colVenta"].Value;
+
+                var confirmacion = MessageBox.Show(
+                    $" Venta: {idVenta} \n ¿Deseas cambiar el estado a '{nuevoEstado}'?",
+                    "Confirmar cambio",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (confirmacion == DialogResult.Yes)
+                {
+                    string idEstado = nuevoEstado switch
+                    {
+                        "Entregado" => "EN",
+                        "Pendiente" => "PE",
+                        "Cancelado" => "CA",
+                        _ => null
+                    };
+
+                    bool exito = _ServicioVentas.Actualizar_Estado(idVenta, idEstado, out string errorMessage);
+
+                    if (exito)
+                    {
+                        // Guardar el nuevo estado como anterior
+                        dgvVentas.Rows[e.RowIndex].Tag = nuevoEstado;
+
+                        if (nuevoEstado == "Entregado" || nuevoEstado == "Cancelado")
+                            dgvVentas.Rows[e.RowIndex].ReadOnly = true;
+                    }
+                    else
+                    {
+                        _revirtiendo = true;
+                        dgvVentas.Rows[e.RowIndex].Cells["colEstado"].Value = estadoAnterior;
+                        _revirtiendo = false;
+                    }
+                }
+                else
+                {
+                    _revirtiendo = true;
+                    dgvVentas.Rows[e.RowIndex].Cells["colEstado"].Value = estadoAnterior;
+                    _revirtiendo = false;
+                }
+            }
+        }
+
+        private void textBuscarU_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+                e.Handled = true;
+        }
+
+        private void textBuscarN_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+                e.Handled = true;
+        }
+        // Fin 
 
         private void InicializarColumnaEstado()
         {
@@ -101,11 +203,13 @@ namespace VeloxSoft.Formularios
             combo.Name = "colEstado";
             combo.Items.Add("Entregado");
             combo.Items.Add("Pendiente");
+            combo.Items.Add("Cancelado");
             combo.DisplayIndex = index;
             combo.ReadOnly = false;
             combo.FlatStyle = FlatStyle.Flat;
             dgvVentas.Columns.Add(combo);
             dgvVentas.DataError += (s, ev) => ev.Cancel = true;
+
         }
 
         private void RedondearPanel(Panel p, PaintEventArgs e, int radio)
@@ -170,6 +274,13 @@ namespace VeloxSoft.Formularios
                 e.CellStyle.SelectionForeColor = Color.FromArgb(59, 109, 17);
             }
             else if (valor == "Pendiente")
+            {
+                e.CellStyle.BackColor = Color.FromArgb(220, 220, 220);
+                e.CellStyle.ForeColor = Color.FromArgb(90, 90, 90);
+                e.CellStyle.SelectionBackColor = Color.FromArgb(180, 180, 180);
+                e.CellStyle.SelectionForeColor = Color.FromArgb(90, 90, 90);
+            }
+            else if (valor == "Cancelado")
             {
                 e.CellStyle.BackColor = Color.FromArgb(224, 100, 68);
                 e.CellStyle.ForeColor = Color.FromArgb(133, 79, 11);
@@ -241,60 +352,9 @@ namespace VeloxSoft.Formularios
 
             pnlFormulario.Invalidate();
         }
-
-        private void RenderizarGrid(List<object[]> filas)
-        {
-            dgvVentas.Rows.Clear();
-            foreach (var fila in filas)
-                dgvVentas.Rows.Add(fila);
-        }
-
         private void btnFiltrar_Click(object sender, EventArgs e)
         {
-            string buscarUsuario = textBuscarU.Text.Trim();
-            string buscarNumero = textBuscarN.Text.Trim();
-
-            var filtradas = _datosVentas.AsEnumerable();
-
-            // Filtro por usuario (índice 6)
-            if (!string.IsNullOrEmpty(buscarUsuario))
-                filtradas = filtradas.Where(f =>
-                    f[6].ToString()!.Contains(buscarUsuario, StringComparison.OrdinalIgnoreCase));
-
-            // Filtro por número (índice 0)
-            if (!string.IsNullOrEmpty(buscarNumero))
-                filtradas = filtradas.Where(f =>
-                    f[0].ToString()!.Contains(buscarNumero, StringComparison.OrdinalIgnoreCase));
-
-            // Filtro por fecha solo si el checkbox está marcado
-            if (checkFecha.Checked)
-            {
-                DateTime desde = dtpDesde.Value.Date;
-                DateTime hasta = dtpHasta.Value.Date;
-
-                if (desde > hasta)
-                {
-                    MessageBox.Show("La fecha 'Desde' no puede ser mayor que 'Hasta'.",
-                                    "Rango inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                filtradas = filtradas.Where(f =>
-                {
-                    if (DateTime.TryParseExact(f[7].ToString(), "dd/MM/yyyy",
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.None, out DateTime fecha))
-                        return fecha >= desde && fecha <= hasta;
-                    return false;
-                });
-            }
-
-            var resultado = filtradas.ToList();
-            RenderizarGrid(resultado);
-
-            if (resultado.Count == 0)
-                MessageBox.Show("No se encontraron resultados.",
-                                "Sin resultados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            CargarVentas();
         }
 
         private void EstilizarBtnFiltrar()
@@ -317,86 +377,56 @@ namespace VeloxSoft.Formularios
 
             int margenH = 20;
             int altoControl = 30;
-
-            int espacioPequeno = 6;
-            int espacioGrande = 25;
+            int espacioPequeno = 0;
+            int espacioGrande = 8;
 
             bool mostrarFechas = checkFecha.Checked;
 
-            // Labels dinámicos
             Label lblDesde = ObtenerLabel("lblDesde", "Desde:");
             Label lblHasta = ObtenerLabel("lblHasta", "Hasta:");
+
+            Label lblNVenta = ObtenerLabel("lblNVenta", "N° Venta:");
+            Label lblNCliente = ObtenerLabel("lblNCliente", "N° Cliente:");
+            Label lblEstado = ObtenerLabel("lblEstado", "Estado:");
+
+            ComboBox cmbEstado = (ComboBox)pnlBotones.Controls["cmbEstado"];
 
             // =========================================
             // SIN FECHAS → UNA SOLA FILA
             // =========================================
-
             if (!mostrarFechas)
             {
                 int y = (h - altoControl) / 2;
 
-                int anchoLblUsuario = lblBuscarU.PreferredWidth;
-                int anchoLblNumero = lblBuscarN.PreferredWidth;
-                int anchoBtn = 100;
+                // N° Venta
+                lblNVenta.Location = new Point(margenH, y + 5);
+                textBuscarU.Location = new Point(lblNVenta.Right + espacioPequeno, y);
+                textBuscarU.Size = new Size(180, altoControl);
 
-                int espacioDisponible =
-                    w
-                    - (margenH * 2)
-                    - anchoLblUsuario
-                    - anchoLblNumero
-                    - anchoBtn
-                    - (espacioPequeno * 4)
-                    - espacioGrande;
+                // N° Cliente
+                lblNCliente.Location = new Point(textBuscarU.Right + espacioGrande, y + 5);
+                textBuscarN.Location = new Point(lblNCliente.Right + espacioPequeno, y);
+                textBuscarN.Size = new Size(130, altoControl);
 
-                int anchoText = espacioDisponible / 2;
+                // Estado
+                lblEstado.Location = new Point(textBuscarN.Right + espacioGrande, y + 5);
+                cmbEstado.Location = new Point(lblEstado.Right + espacioPequeno, y);
+                cmbEstado.Size = new Size(110, altoControl);
 
-                // =========================
-                // Usuario
-                // =========================
-
-                lblBuscarU.Location = new Point(margenH, y + 5);
-
-                textBuscarU.Location = new Point(
-                    lblBuscarU.Right + espacioPequeno,
-                    y);
-
-                textBuscarU.Size = new Size(160, altoControl);
-
-                // =========================
-                // Número
-                // =========================
-
-                lblBuscarN.Location = new Point(
-                    textBuscarU.Right + espacioGrande,
-                    y + 5);
-
-                textBuscarN.Location = new Point(
-                    lblBuscarN.Right + espacioPequeno,
-                    y);
-
-                textBuscarN.Size = new Size(140, altoControl);
-
-                // =========================
                 // Botón
-                // =========================
-
-                btnFiltrar.Location = new Point(
-                    w - anchoBtn - margenH,
-                    y);
-
-                btnFiltrar.Size = new Size(anchoBtn, altoControl);
+                btnFiltrar.Location = new Point(w - 100 - margenH, y);
+                btnFiltrar.Size = new Size(100, altoControl);
 
                 // CheckBox
-                checkFecha.Location = new Point(
-                    btnFiltrar.Left - 170,
-                    y + 5);
-
                 checkFecha.AutoSize = true;
+                checkFecha.Location = new Point(
+                    btnFiltrar.Left - checkFecha.PreferredSize.Width - espacioPequeno,
+                    y + 5
+                );
 
                 // Fechas ocultas
                 lblDesde.Visible = false;
                 lblHasta.Visible = false;
-
                 dtpDesde.Visible = false;
                 dtpHasta.Visible = false;
             }
@@ -404,109 +434,61 @@ namespace VeloxSoft.Formularios
             // =========================================
             // CON FECHAS → DOS FILAS
             // =========================================
-
             else
             {
                 int margenV = 12;
-
                 int anchoDisponible = w - (margenH * 2);
 
                 // =====================================
                 // FILA 1
                 // =====================================
-
                 int y1 = margenV;
 
-                int anchoLblUsuario = lblBuscarU.PreferredWidth;
-                int anchoLblNumero = lblBuscarN.PreferredWidth;
-                int anchoBtn = 100;
+                // N° Venta
+                lblNVenta.Location = new Point(margenH, y1 + 5);
+                textBuscarU.Location = new Point(lblNVenta.Right + espacioPequeno, y1);
+                textBuscarU.Size = new Size(180, altoControl);
 
-                int espacioDisponible =
-                    anchoDisponible
-                    - anchoLblUsuario
-                    - anchoLblNumero
-                    - anchoBtn
-                    - (espacioPequeno * 4)
-                    - espacioGrande;
+                // N° Cliente
+                lblNCliente.Location = new Point(textBuscarU.Right + espacioGrande, y1 + 5);
+                textBuscarN.Location = new Point(lblNCliente.Right + espacioPequeno, y1);
+                textBuscarN.Size = new Size(130, altoControl);
 
-                int anchoText = espacioDisponible / 2;
-
-                // Usuario
-                lblBuscarU.Location = new Point(margenH, y1 + 5);
-
-                textBuscarU.Location = new Point(
-                    lblBuscarU.Right + espacioPequeno,
-                    y1);
-
-                textBuscarU.Size = new Size(160, altoControl);
-
-                // Número
-                lblBuscarN.Location = new Point(
-                    textBuscarU.Right + espacioGrande,
-                    y1 + 5);
-
-                textBuscarN.Location = new Point(
-                    lblBuscarN.Right + espacioPequeno,
-                    y1);
-
-                textBuscarN.Size = new Size(140, altoControl);
+                // Estado
+                lblEstado.Location = new Point(textBuscarN.Right + espacioGrande, y1 + 5);
+                cmbEstado.Location = new Point(lblEstado.Right + espacioPequeno, y1);
+                cmbEstado.Size = new Size(110, altoControl);
 
                 // Botón
-                btnFiltrar.Location = new Point(
-                    w - anchoBtn - margenH,
-                    y1);
-
-                btnFiltrar.Size = new Size(anchoBtn, altoControl);
+                btnFiltrar.Location = new Point(w - 100 - margenH, y1);
+                btnFiltrar.Size = new Size(100, altoControl);
 
                 // CheckBox
-                checkFecha.Location = new Point(
-                    btnFiltrar.Left - 170,
-                    y1 + 5);
-
                 checkFecha.AutoSize = true;
-
-
+                checkFecha.Location = new Point(
+                    btnFiltrar.Left - checkFecha.PreferredSize.Width - espacioPequeno,
+                    y1 + 5
+                );
 
                 // =====================================
                 // FILA 2
                 // =====================================
-
                 int y2 = y1 + altoControl + 15;
 
                 lblDesde.Visible = true;
                 lblHasta.Visible = true;
-
                 dtpDesde.Visible = true;
                 dtpHasta.Visible = true;
 
-                int anchoGrupoFecha =
-                    (anchoDisponible - espacioGrande) / 2;
+                int anchoGrupoFecha = (anchoDisponible - espacioGrande) / 2;
 
-                // DESDE
-                lblDesde.Location = new Point(
-                    margenH,
-                    y2 + 5);
+                lblDesde.Location = new Point(margenH, y2 + 5);
+                dtpDesde.Location = new Point(lblDesde.Right + espacioPequeno, y2);
+                dtpDesde.Size = new Size(anchoGrupoFecha - lblDesde.Width - espacioPequeno, altoControl);
 
-                dtpDesde.Location = new Point(
-                    lblDesde.Right + espacioPequeno,
-                    y2);
-
-                dtpDesde.Size = new Size(
-                    anchoGrupoFecha - lblDesde.Width - espacioPequeno,
-                    altoControl);
-
-                // HASTA
-                lblHasta.Location = new Point(
-                    dtpDesde.Right + espacioGrande,
-                    y2 + 5);
-
-                dtpHasta.Location = new Point(
-                    lblHasta.Right + espacioPequeno,
-                    y2);
-
-                dtpHasta.Size = new Size(
-                    w - dtpHasta.Left - margenH,
-                    altoControl);
+                lblHasta.Location = new Point(dtpDesde.Right + espacioGrande, y2 + 5);
+                dtpHasta.Location = new Point(lblHasta.Right + espacioPequeno, y2);
+                dtpHasta.Size = new Size(w - dtpHasta.Left - margenH, altoControl);
             }
 
             pnlBotones.Invalidate();
@@ -532,7 +514,7 @@ namespace VeloxSoft.Formularios
         {
             if (e.RowIndex < 0) return;
             var fila = dgvVentas.Rows[e.RowIndex];
-            string idVenta = fila.Cells["colCantidad"].Value?.ToString() ?? "";
+            string idVenta = fila.Cells["colVenta"].Value?.ToString() ?? "";
             string fecha = fila.Cells["colFecha"].Value?.ToString() ?? "";
             string telefono = fila.Cells["colTelefono"].Value?.ToString() ?? "";
 
@@ -542,7 +524,7 @@ namespace VeloxSoft.Formularios
                 _formDetalle.Dispose();
             }
 
-            _formDetalle = new FormDetallesVentas(idVenta, telefono, fecha);
+            _formDetalle = new FormDetallesVentas(idVenta, telefono, fecha, _ServicioVentas);
             _formDetalle.TopLevel = false;
             _formDetalle.FormBorderStyle = FormBorderStyle.None;
             _formDetalle.Dock = DockStyle.Fill;
@@ -566,8 +548,8 @@ namespace VeloxSoft.Formularios
             // LOS BUSCADORES SIEMPRE VISIBLES
             textBuscarU.Visible = true;
             textBuscarN.Visible = true;
-            lblBuscarU.Visible = true;
-            lblBuscarN.Visible = true;
+            lblNVenta.Visible = true;
+            lblNCliente.Visible = true;
 
             // Redibujar panel
             pnlBotones_Resize(this, EventArgs.Empty);
