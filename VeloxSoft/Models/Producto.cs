@@ -12,5 +12,7 @@ namespace VeloxSoft.Models
         public decimal Precio { get; set; }
         public bool Estado { get; set; }
         public string IdCategoria { get; set; }
+        public override string ToString()
+    => $"{IdProducto} — {Nombre}  (${Precio:N2} | {IdCategoria} | Stock: {Cantidad:N2})";
     }
 }

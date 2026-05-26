@@ -36,6 +36,7 @@ namespace VeloxSoft
             var ServicioVentas = new ServicioVentas(dbConfig);
             var ServicioCorte = new ServicioCorte(dbConfig);
             var ServicioGasto = new ServicioGasto(dbConfig);
+            var ServicioCaja = new ServicioCaja(dbConfig);
             // Creamos el formulario de Login
             FormLogIn login = new FormLogIn(AutenticarUsuario);
            
@@ -43,7 +44,7 @@ namespace VeloxSoft
             // Si el Login se cierra con un resultado "OK", iniciamos el menú
             if (login.ShowDialog() == DialogResult.OK)
             {
-                Application.Run(new FormMainMenu(ServicioInventario, ServicioUsuarios, ServicioClientes, ServicioVentas, ServicioCorte, ServicioGasto));
+                Application.Run(new FormMainMenu(ServicioInventario, ServicioUsuarios, ServicioClientes, ServicioVentas, ServicioCorte, ServicioGasto, ServicioCaja));
             }
         }
     }   

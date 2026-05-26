@@ -36,6 +36,9 @@
             btnTerminarCompra = new Button();
             btnLimpiar = new Button();
             pnlBotones = new Panel();
+            lblInfoId = new Label();
+            lblInfoNombre = new Label();
+            lblErrores = new Label();
             pnlBD = new Panel();
             dgvCarrito = new DataGridView();
             colId = new DataGridViewTextBoxColumn();
@@ -45,7 +48,6 @@
             colCantidad = new DataGridViewTextBoxColumn();
             colSubtotal = new DataGridViewTextBoxColumn();
             colEliminar = new DataGridViewButtonColumn();
-            lblErrores = new Label();
             pnlFormulario.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudCantidad).BeginInit();
             pnlBotones.SuspendLayout();
@@ -58,8 +60,9 @@
             pnlCaja.BackColor = Color.FromArgb(234, 243, 222);
             pnlCaja.Dock = DockStyle.Fill;
             pnlCaja.Location = new Point(0, 0);
+            pnlCaja.Margin = new Padding(3, 2, 3, 2);
             pnlCaja.Name = "pnlCaja";
-            pnlCaja.Size = new Size(1600, 1067);
+            pnlCaja.Size = new Size(1213, 591);
             pnlCaja.TabIndex = 0;
             pnlCaja.Resize += pnlCaja_Resize;
             // 
@@ -83,9 +86,10 @@
             pnlFormulario.Controls.Add(lblTotalValor);
             pnlFormulario.Controls.Add(btnTerminarCompra);
             pnlFormulario.Controls.Add(btnLimpiar);
-            pnlFormulario.Location = new Point(14, 16);
+            pnlFormulario.Location = new Point(12, 12);
+            pnlFormulario.Margin = new Padding(3, 2, 3, 2);
             pnlFormulario.Name = "pnlFormulario";
-            pnlFormulario.Size = new Size(480, 1034);
+            pnlFormulario.Size = new Size(420, 776);
             pnlFormulario.TabIndex = 1;
             pnlFormulario.Paint += pnlFormulario_Paint;
             pnlFormulario.Resize += pnlFormulario_Resize;
@@ -94,9 +98,10 @@
             // 
             lstSugerencias2.BorderStyle = BorderStyle.FixedSingle;
             lstSugerencias2.Font = new Font("Segoe UI", 10F);
-            lstSugerencias2.Location = new Point(26, 81);
+            lstSugerencias2.Location = new Point(23, 61);
+            lstSugerencias2.Margin = new Padding(3, 2, 3, 2);
             lstSugerencias2.Name = "lstSugerencias2";
-            lstSugerencias2.Size = new Size(300, 117);
+            lstSugerencias2.Size = new Size(263, 87);
             lstSugerencias2.TabIndex = 9;
             lstSugerencias2.Visible = false;
             lstSugerencias2.Click += lstSugerencias2_Click;
@@ -105,10 +110,11 @@
             // 
             txtUsuario.BackColor = Color.FromArgb(250, 254, 247);
             txtUsuario.Font = new Font("Segoe UI", 11F);
-            txtUsuario.Location = new Point(26, 43);
+            txtUsuario.Location = new Point(23, 32);
+            txtUsuario.Margin = new Padding(3, 2, 3, 2);
             txtUsuario.Name = "txtUsuario";
             txtUsuario.PlaceholderText = "Argel ";
-            txtUsuario.Size = new Size(300, 32);
+            txtUsuario.Size = new Size(263, 27);
             txtUsuario.TabIndex = 8;
             txtUsuario.TextChanged += txtUsuario_TextChanged;
             // 
@@ -117,9 +123,9 @@
             lblBuscar.AutoSize = true;
             lblBuscar.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblBuscar.ForeColor = Color.FromArgb(59, 109, 17);
-            lblBuscar.Location = new Point(26, 210);
+            lblBuscar.Location = new Point(23, 158);
             lblBuscar.Name = "lblBuscar";
-            lblBuscar.Size = new Size(146, 23);
+            lblBuscar.Size = new Size(123, 19);
             lblBuscar.TabIndex = 0;
             lblBuscar.Text = "Buscar producto:";
             // 
@@ -130,9 +136,10 @@
             checkCaja.FlatStyle = FlatStyle.Flat;
             checkCaja.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             checkCaja.ForeColor = Color.FromArgb(59, 109, 17);
-            checkCaja.Location = new Point(26, 17);
+            checkCaja.Location = new Point(23, 13);
+            checkCaja.Margin = new Padding(3, 2, 3, 2);
             checkCaja.Name = "checkCaja";
-            checkCaja.Size = new Size(200, 30);
+            checkCaja.Size = new Size(175, 22);
             checkCaja.TabIndex = 4;
             checkCaja.Text = "  \U0001f6f5  Envío";
             checkCaja.UseVisualStyleBackColor = false;
@@ -142,10 +149,11 @@
             // 
             txtBuscar.BackColor = Color.FromArgb(250, 254, 247);
             txtBuscar.Font = new Font("Segoe UI", 11F);
-            txtBuscar.Location = new Point(26, 238);
+            txtBuscar.Location = new Point(23, 178);
+            txtBuscar.Margin = new Padding(3, 2, 3, 2);
             txtBuscar.Name = "txtBuscar";
             txtBuscar.PlaceholderText = "Nombre o ID...";
-            txtBuscar.Size = new Size(300, 32);
+            txtBuscar.Size = new Size(263, 27);
             txtBuscar.TabIndex = 0;
             txtBuscar.TextChanged += txtBuscar_TextChanged;
             // 
@@ -154,9 +162,9 @@
             lblUsuario.AutoSize = true;
             lblUsuario.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblUsuario.ForeColor = Color.FromArgb(59, 109, 17);
-            lblUsuario.Location = new Point(26, 17);
+            lblUsuario.Location = new Point(23, 13);
             lblUsuario.Name = "lblUsuario";
-            lblUsuario.Size = new Size(75, 23);
+            lblUsuario.Size = new Size(64, 19);
             lblUsuario.TabIndex = 7;
             lblUsuario.Text = "Usuario:";
             lblUsuario.Click += label1_Click;
@@ -165,9 +173,10 @@
             // 
             lstSugerencias.BorderStyle = BorderStyle.FixedSingle;
             lstSugerencias.Font = new Font("Segoe UI", 10F);
-            lstSugerencias.Location = new Point(26, 276);
+            lstSugerencias.Location = new Point(23, 207);
+            lstSugerencias.Margin = new Padding(3, 2, 3, 2);
             lstSugerencias.Name = "lstSugerencias";
-            lstSugerencias.Size = new Size(300, 117);
+            lstSugerencias.Size = new Size(263, 87);
             lstSugerencias.TabIndex = 1;
             lstSugerencias.Visible = false;
             lstSugerencias.Click += lstSugerencias_Click;
@@ -177,9 +186,9 @@
             lblCantidad.AutoSize = true;
             lblCantidad.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblCantidad.ForeColor = Color.FromArgb(59, 109, 17);
-            lblCantidad.Location = new Point(23, 466);
+            lblCantidad.Location = new Point(20, 350);
             lblCantidad.Name = "lblCantidad";
-            lblCantidad.Size = new Size(88, 23);
+            lblCantidad.Size = new Size(73, 19);
             lblCantidad.TabIndex = 2;
             lblCantidad.Text = "Cantidad:";
             // 
@@ -189,11 +198,12 @@
             nudCantidad.DecimalPlaces = 2;
             nudCantidad.Font = new Font("Segoe UI", 11F);
             nudCantidad.Increment = new decimal(new int[] { 25, 0, 0, 131072 });
-            nudCantidad.Location = new Point(23, 494);
+            nudCantidad.Location = new Point(20, 370);
+            nudCantidad.Margin = new Padding(3, 2, 3, 2);
             nudCantidad.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             nudCantidad.Minimum = new decimal(new int[] { 25, 0, 0, 131072 });
             nudCantidad.Name = "nudCantidad";
-            nudCantidad.Size = new Size(140, 32);
+            nudCantidad.Size = new Size(122, 27);
             nudCantidad.TabIndex = 2;
             nudCantidad.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
@@ -202,9 +212,9 @@
             lblUnidad.AutoSize = true;
             lblUnidad.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblUnidad.ForeColor = Color.FromArgb(120, 120, 120);
-            lblUnidad.Location = new Point(173, 498);
+            lblUnidad.Location = new Point(151, 374);
             lblUnidad.Name = "lblUnidad";
-            lblUnidad.Size = new Size(38, 23);
+            lblUnidad.Size = new Size(33, 19);
             lblUnidad.TabIndex = 3;
             lblUnidad.Text = "pza";
             // 
@@ -215,9 +225,10 @@
             btnAgregar.FlatStyle = FlatStyle.Flat;
             btnAgregar.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             btnAgregar.ForeColor = Color.White;
-            btnAgregar.Location = new Point(23, 546);
+            btnAgregar.Location = new Point(20, 410);
+            btnAgregar.Margin = new Padding(3, 2, 3, 2);
             btnAgregar.Name = "btnAgregar";
-            btnAgregar.Size = new Size(300, 42);
+            btnAgregar.Size = new Size(262, 32);
             btnAgregar.TabIndex = 3;
             btnAgregar.Text = "+ Agregar";
             btnAgregar.UseVisualStyleBackColor = false;
@@ -228,9 +239,9 @@
             lblMetodoPago.AutoSize = true;
             lblMetodoPago.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblMetodoPago.ForeColor = Color.FromArgb(59, 109, 17);
-            lblMetodoPago.Location = new Point(23, 616);
+            lblMetodoPago.Location = new Point(20, 462);
             lblMetodoPago.Name = "lblMetodoPago";
-            lblMetodoPago.Size = new Size(149, 23);
+            lblMetodoPago.Size = new Size(126, 19);
             lblMetodoPago.TabIndex = 4;
             lblMetodoPago.Text = "Método de pago:";
             // 
@@ -240,9 +251,10 @@
             cbMetodoPago.DropDownStyle = ComboBoxStyle.DropDownList;
             cbMetodoPago.Font = new Font("Segoe UI", 11F);
             cbMetodoPago.Items.AddRange(new object[] { "Efectivo", "Tarjeta" });
-            cbMetodoPago.Location = new Point(23, 644);
+            cbMetodoPago.Location = new Point(20, 483);
+            cbMetodoPago.Margin = new Padding(3, 2, 3, 2);
             cbMetodoPago.Name = "cbMetodoPago";
-            cbMetodoPago.Size = new Size(300, 33);
+            cbMetodoPago.Size = new Size(263, 28);
             cbMetodoPago.TabIndex = 4;
             // 
             // lblTotal
@@ -250,9 +262,9 @@
             lblTotal.AutoSize = true;
             lblTotal.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
             lblTotal.ForeColor = Color.FromArgb(59, 109, 17);
-            lblTotal.Location = new Point(23, 755);
+            lblTotal.Location = new Point(20, 566);
             lblTotal.Name = "lblTotal";
-            lblTotal.Size = new Size(77, 32);
+            lblTotal.Size = new Size(60, 25);
             lblTotal.TabIndex = 5;
             lblTotal.Text = "Total:";
             // 
@@ -261,9 +273,9 @@
             lblTotalValor.AutoSize = true;
             lblTotalValor.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
             lblTotalValor.ForeColor = Color.FromArgb(59, 109, 17);
-            lblTotalValor.Location = new Point(23, 785);
+            lblTotalValor.Location = new Point(20, 589);
             lblTotalValor.Name = "lblTotalValor";
-            lblTotalValor.Size = new Size(116, 50);
+            lblTotalValor.Size = new Size(94, 41);
             lblTotalValor.TabIndex = 6;
             lblTotalValor.Text = "$0.00";
             // 
@@ -274,9 +286,10 @@
             btnTerminarCompra.FlatStyle = FlatStyle.Flat;
             btnTerminarCompra.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnTerminarCompra.ForeColor = Color.White;
-            btnTerminarCompra.Location = new Point(23, 875);
+            btnTerminarCompra.Location = new Point(20, 656);
+            btnTerminarCompra.Margin = new Padding(3, 2, 3, 2);
             btnTerminarCompra.Name = "btnTerminarCompra";
-            btnTerminarCompra.Size = new Size(300, 50);
+            btnTerminarCompra.Size = new Size(262, 38);
             btnTerminarCompra.TabIndex = 5;
             btnTerminarCompra.Text = "✔ Terminar compra";
             btnTerminarCompra.UseVisualStyleBackColor = false;
@@ -289,9 +302,10 @@
             btnLimpiar.FlatStyle = FlatStyle.Flat;
             btnLimpiar.Font = new Font("Segoe UI", 11F);
             btnLimpiar.ForeColor = Color.White;
-            btnLimpiar.Location = new Point(23, 935);
+            btnLimpiar.Location = new Point(20, 701);
+            btnLimpiar.Margin = new Padding(3, 2, 3, 2);
             btnLimpiar.Name = "btnLimpiar";
-            btnLimpiar.Size = new Size(300, 42);
+            btnLimpiar.Size = new Size(262, 32);
             btnLimpiar.TabIndex = 6;
             btnLimpiar.Text = "✕ Limpiar";
             btnLimpiar.UseVisualStyleBackColor = false;
@@ -300,21 +314,57 @@
             // pnlBotones
             // 
             pnlBotones.BackColor = Color.White;
+            pnlBotones.Controls.Add(lblInfoId);
+            pnlBotones.Controls.Add(lblInfoNombre);
             pnlBotones.Controls.Add(lblErrores);
-            pnlBotones.Location = new Point(507, 16);
+            pnlBotones.Location = new Point(444, 12);
+            pnlBotones.Margin = new Padding(3, 2, 3, 2);
             pnlBotones.Name = "pnlBotones";
-            pnlBotones.Size = new Size(1079, 90);
+            pnlBotones.Size = new Size(944, 68);
             pnlBotones.TabIndex = 2;
             pnlBotones.Paint += pnlBotones_Paint;
             pnlBotones.Resize += pnlBotones_Resize;
+            // 
+            // lblInfoId
+            // 
+            lblInfoId.AutoSize = true;
+            lblInfoId.Location = new Point(508, 15);
+            lblInfoId.Name = "lblInfoId";
+            lblInfoId.Size = new Size(38, 15);
+            lblInfoId.TabIndex = 2;
+            lblInfoId.Text = "label2";
+            lblInfoId.Visible = false;
+            // 
+            // lblInfoNombre
+            // 
+            lblInfoNombre.AutoSize = true;
+            lblInfoNombre.Location = new Point(203, 15);
+            lblInfoNombre.Name = "lblInfoNombre";
+            lblInfoNombre.Size = new Size(38, 15);
+            lblInfoNombre.TabIndex = 1;
+            lblInfoNombre.Text = "label1";
+            lblInfoNombre.Visible = false;
+            // 
+            // lblErrores
+            // 
+            lblErrores.AutoSize = true;
+            lblErrores.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblErrores.ForeColor = Color.Red;
+            lblErrores.Location = new Point(28, 25);
+            lblErrores.Name = "lblErrores";
+            lblErrores.Size = new Size(77, 21);
+            lblErrores.TabIndex = 0;
+            lblErrores.Text = "lblErrores";
+            lblErrores.Visible = false;
             // 
             // pnlBD
             // 
             pnlBD.BackColor = Color.White;
             pnlBD.Controls.Add(dgvCarrito);
-            pnlBD.Location = new Point(507, 118);
+            pnlBD.Location = new Point(444, 88);
+            pnlBD.Margin = new Padding(3, 2, 3, 2);
             pnlBD.Name = "pnlBD";
-            pnlBD.Size = new Size(1079, 930);
+            pnlBD.Size = new Size(944, 698);
             pnlBD.TabIndex = 3;
             pnlBD.Paint += pnlBD_Paint;
             // 
@@ -349,13 +399,14 @@
             dgvCarrito.EnableHeadersVisualStyles = false;
             dgvCarrito.GridColor = Color.FromArgb(235, 235, 235);
             dgvCarrito.Location = new Point(0, 0);
+            dgvCarrito.Margin = new Padding(3, 2, 3, 2);
             dgvCarrito.MultiSelect = false;
             dgvCarrito.Name = "dgvCarrito";
             dgvCarrito.RowHeadersVisible = false;
             dgvCarrito.RowHeadersWidth = 51;
             dgvCarrito.RowTemplate.Height = 45;
             dgvCarrito.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvCarrito.Size = new Size(1079, 930);
+            dgvCarrito.Size = new Size(944, 698);
             dgvCarrito.TabIndex = 0;
             dgvCarrito.CellClick += dgvCarrito_CellClick;
             dgvCarrito.CellEndEdit += dgvCarrito_CellEndEdit;
@@ -422,28 +473,18 @@
             colEliminar.Text = "✕";
             colEliminar.UseColumnTextForButtonValue = true;
             // 
-            // lblErrores
-            // 
-            lblErrores.AutoSize = true;
-            lblErrores.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblErrores.ForeColor = Color.Red;
-            lblErrores.Location = new Point(32, 33);
-            lblErrores.Name = "lblErrores";
-            lblErrores.Size = new Size(97, 23);
-            lblErrores.TabIndex = 0;
-            lblErrores.Text = "lblErrores";
-            // 
             // FormCaja
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(245, 247, 245);
-            ClientSize = new Size(1600, 1067);
+            ClientSize = new Size(1213, 591);
             Controls.Add(pnlBD);
             Controls.Add(pnlBotones);
             Controls.Add(pnlFormulario);
             Controls.Add(pnlCaja);
             FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "FormCaja";
             Text = "FormCaja";
             pnlFormulario.ResumeLayout(false);
@@ -486,5 +527,7 @@
         private CheckBox checkCaja;
         private ListBox lstSugerencias2;
         private Label lblErrores;
+        private Label lblInfoId;
+        private Label lblInfoNombre;
     }
 }

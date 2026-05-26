@@ -4,37 +4,22 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
+using VeloxSoft.Models;
+using VeloxSoft.Services;
 
 namespace VeloxSoft.Formularios
 {
     public partial class FormCaja : Form
     {
         private List<ProductoCarrito> _carrito = new List<ProductoCarrito>();
-        private ProductoCatalogo? _productoSeleccionado;
-        private UsuarioCatalogo? _usuarioSeleccionado;
+        private Producto? _productoSeleccionado;
+        private Usuario? _usuarioSeleccionado;
+        private readonly ServicioCaja _ServicioCaja;
 
         // Datos de prueba productos
-        private List<ProductoCatalogo> _catalogo = new List<ProductoCatalogo>
-        {
-            new ProductoCatalogo { Id = "001", Nombre = "Manzana",   Precio = 25.00m, UnidadVenta = "kg"  },
-            new ProductoCatalogo { Id = "002", Nombre = "Mandarina", Precio = 30.00m, UnidadVenta = "kg"  },
-            new ProductoCatalogo { Id = "003", Nombre = "Mango",     Precio = 20.00m, UnidadVenta = "kg"  },
-            new ProductoCatalogo { Id = "004", Nombre = "Leche",     Precio = 28.00m, UnidadVenta = "pza" },
-            new ProductoCatalogo { Id = "005", Nombre = "Pan",       Precio = 15.00m, UnidadVenta = "pza" },
-            new ProductoCatalogo { Id = "006", Nombre = "Arroz",     Precio = 22.00m, UnidadVenta = "kg"  },
-        };
+        
 
-        // Datos de prueba usuarios
-        private List<UsuarioCatalogo> _usuarios = new List<UsuarioCatalogo>
-        {
-            new UsuarioCatalogo { Id = "U01", Nombre = "Argel",   Telefono = "999-0001" },
-            new UsuarioCatalogo { Id = "U02", Nombre = "Admin",   Telefono = "999-0002" },
-            new UsuarioCatalogo { Id = "U03", Nombre = "Juan",    Telefono = "999-0003" },
-            new UsuarioCatalogo { Id = "U04", Nombre = "María",   Telefono = "999-0004" },
-            new UsuarioCatalogo { Id = "U05", Nombre = "Carlos",  Telefono = "999-0005" },
-        };
-
-        public FormCaja()
+        public FormCaja(ServicioCaja servicioCaja)
         {
             InitializeComponent();
             this.DoubleBuffered = true;
@@ -53,54 +38,11 @@ namespace VeloxSoft.Formularios
             checkCaja.CheckedChanged += checkCaja_CheckedChanged;
             pnlCaja_Resize(this, EventArgs.Empty);
             pnlFormulario_Resize(this, EventArgs.Empty);
-        }
 
-        // ── BÚSQUEDA USUARIO ─────────────────────────────────────
-
-        private void txtUsuario_TextChanged(object sender, EventArgs e)
-        {
-            if (!checkCaja.Checked) return; // ← seguridad extra
-
-            string texto = txtUsuario.Text.Trim();
-
-            if (string.IsNullOrEmpty(texto))
-            {
-                lstSugerencias2.Visible = false;
-                _usuarioSeleccionado = null;
-                return;
-            }
-
-            var sugerencias = _usuarios.Where(u =>
-                u.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                u.Telefono.Contains(texto, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
-
-            lstSugerencias2.Items.Clear();
-
-            if (sugerencias.Count > 0)
-            {
-                foreach (var u in sugerencias)
-                    lstSugerencias2.Items.Add($"{u.Nombre}  ({u.Telefono})");
-
-                lstSugerencias2.Tag = sugerencias;
-                lstSugerencias2.Visible = true;
-            }
-            else
-            {
-                lstSugerencias2.Visible = false;
-            }
-        }
-
-        private void lstSugerencias2_Click(object sender, EventArgs e)
-        {
-            if (lstSugerencias2.SelectedIndex < 0) return;
-
-            var lista = lstSugerencias2.Tag as List<UsuarioCatalogo>;
-            if (lista == null) return;
-
-            _usuarioSeleccionado = lista[lstSugerencias2.SelectedIndex];
-            txtUsuario.Text = _usuarioSeleccionado.Nombre;
-            lstSugerencias2.Visible = false;
+            /*var metodo = cbMetodoPago.SelectedItem as MetodoPago;
+            string idPago = metodo?.Id ?? "EF"; // Efectivo por defecto*/
+            _ServicioCaja = servicioCaja;
+            CargarMetodosPago();
         }
 
         // ── BÚSQUEDA PRODUCTO ────────────────────────────────────
@@ -112,22 +54,20 @@ namespace VeloxSoft.Formularios
             if (string.IsNullOrEmpty(texto))
             {
                 lstSugerencias.Visible = false;
+                _productoSeleccionado = null;
                 return;
             }
 
-            var sugerencias = _catalogo.Where(p =>
-                p.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                p.Id.Contains(texto, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
+            var resultados = _ServicioCaja.BuscarProductos(texto, out string _);
 
             lstSugerencias.Items.Clear();
 
-            if (sugerencias.Count > 0)
+            if (resultados.Count > 0)
             {
-                foreach (var p in sugerencias)
-                    lstSugerencias.Items.Add($"{p.Id} — {p.Nombre}  (${p.Precio}/{p.UnidadVenta})");
+                foreach (var p in resultados)
+                    lstSugerencias.Items.Add(p); // usa ToString() del modelo
 
-                lstSugerencias.Tag = sugerencias;
+                lstSugerencias.Tag = resultados;
                 lstSugerencias.Visible = true;
             }
             else
@@ -140,40 +80,150 @@ namespace VeloxSoft.Formularios
         {
             if (lstSugerencias.SelectedIndex < 0) return;
 
-            var lista = lstSugerencias.Tag as List<ProductoCatalogo>;
+            var lista = lstSugerencias.Tag as List<Producto>;
             if (lista == null) return;
 
             _productoSeleccionado = lista[lstSugerencias.SelectedIndex];
+
+            // Validación: stock suficiente para al menos 1 unidad
+            if (_productoSeleccionado.Cantidad <= 0)
+            {
+                MostrarError("Este producto no tiene stock disponible.");
+                _productoSeleccionado = null;
+                return;
+            }
+
             txtBuscar.Text = _productoSeleccionado.Nombre;
-            lblUnidad.Text = _productoSeleccionado.UnidadVenta;
+            nudCantidad.Maximum = (decimal)_productoSeleccionado.Cantidad; // límite de stock
+            nudCantidad.Value = 1;
+            lblUnidad.Text = _productoSeleccionado.IdCategoria;
             lstSugerencias.Visible = false;
         }
 
-        // ── CARRITO ──────────────────────────────────────────────
+        // ── BÚSQUEDA USUARIO ─────────────────────────────────────
 
+        private void txtUsuario_TextChanged(object sender, EventArgs e)
+        {
+            if (!checkCaja.Checked) return;
+
+            string texto = txtUsuario.Text.Trim();
+
+            if (string.IsNullOrEmpty(texto))
+            {
+                lstSugerencias2.Visible = false;
+                _usuarioSeleccionado = null;
+                return;
+            }
+
+            var resultados = _ServicioCaja.BuscarUsuarios(texto, out string _);
+
+            lstSugerencias2.Items.Clear();
+
+            if (resultados.Count > 0)
+            {
+                foreach (var u in resultados)
+                    lstSugerencias2.Items.Add(u); // usa ToString() del modelo
+
+                lstSugerencias2.Tag = resultados;
+                lstSugerencias2.Visible = true;
+            }
+            else
+            {
+                lstSugerencias2.Visible = false;
+            }
+        }
+
+        private void lstSugerencias2_Click(object sender, EventArgs e)
+        {
+            if (lstSugerencias2.SelectedIndex < 0) return;
+
+            var lista = lstSugerencias2.Tag as List<Usuario>;
+            if (lista == null) return;
+
+            _usuarioSeleccionado = lista[lstSugerencias2.SelectedIndex];
+            txtUsuario.Text = $"{_usuarioSeleccionado.Nombre} ({_usuarioSeleccionado.Id})";
+            lstSugerencias2.Visible = false;
+
+            // Bloquear campo
+            txtUsuario.ReadOnly = true;
+            txtUsuario.BackColor = Color.FromArgb(220, 220, 220);
+
+            // Mostrar info en el recuadro si tienes pnlInfoUsuario
+            lblInfoNombre.Text = _usuarioSeleccionado.Nombre;
+            lblInfoNombre.Visible = true;
+            lblInfoId.Text = $"Tel: {_usuarioSeleccionado.Id}";
+            lblInfoId.Visible = true;
+        }
+
+        private void txtUsuario_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Si presiona Delete o Backspace estando bloqueado, desbloquea
+            if (txtUsuario.ReadOnly &&
+               (e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back))
+            {
+                txtUsuario.ReadOnly = false;
+                txtUsuario.BackColor = Color.FromArgb(250, 254, 247);
+                txtUsuario.Clear();
+                _usuarioSeleccionado = null;
+                lblInfoNombre.Text = "";
+                lblInfoId.Text = "";
+                e.Handled = true;
+            }
+        }
+
+        private void CargarMetodosPago()
+        {
+            var lista = _ServicioCaja.Ver_MetodosPago(out string _);//out strin _ para ignorar mensaje
+
+            cbMetodoPago.Items.Clear();
+            foreach (var (id, tipo) in lista)
+                cbMetodoPago.Items.Add(new MetodoPago { Id = id, Tipo = tipo });
+
+            if (cbMetodoPago.Items.Count > 0)
+                cbMetodoPago.SelectedIndex = 0;
+        }
+
+        // ── CARRITO ──────────────────────────────────────────────
         private void btnAgregar_Click(object sender, EventArgs e)
         {
+            lblErrores.Visible = false;
+
             if (_productoSeleccionado == null)
             {
-                MessageBox.Show("Selecciona un producto primero.",
-                    "Sin producto", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MostrarError("Selecciona un producto primero.");
                 return;
             }
 
             decimal cantidad = nudCantidad.Value;
-            var existente = _carrito.FirstOrDefault(c => c.Id == _productoSeleccionado.Id);
+
+            if (cantidad > _productoSeleccionado.Cantidad)
+            {
+                MostrarError($"Stock insuficiente. Disponible: {_productoSeleccionado.Cantidad:N2} {_productoSeleccionado.IdCategoria}");
+                return;
+            }
+
+            var existente = _carrito.FirstOrDefault(c => c.Id == _productoSeleccionado.IdProducto);
 
             if (existente != null)
+            {
+                if (existente.Cantidad + cantidad > _productoSeleccionado.Cantidad)
+                {
+                    MostrarError($"No puedes agregar más. Stock disponible: {_productoSeleccionado.Cantidad:N2} {_productoSeleccionado.IdCategoria}");
+                    return;
+                }
                 existente.Cantidad += cantidad;
+            }
             else
+            {
                 _carrito.Add(new ProductoCarrito
                 {
-                    Id = _productoSeleccionado.Id,
+                    Id = _productoSeleccionado.IdProducto,
                     Nombre = _productoSeleccionado.Nombre,
                     Precio = _productoSeleccionado.Precio,
-                    Unidad = _productoSeleccionado.UnidadVenta,
+                    Unidad = _productoSeleccionado.IdCategoria,
                     Cantidad = cantidad
                 });
+            }
 
             RenderizarCarrito();
             LimpiarBusqueda();
@@ -276,7 +326,12 @@ namespace VeloxSoft.Formularios
             decimal total = _carrito.Sum(c => c.Subtotal);
             lblTotalValor.Text = $"${total:F2}";
         }
-
+        private void MostrarError(string mensaje)
+        {
+            lblErrores.Text = mensaje;
+            lblErrores.ForeColor = Color.FromArgb(163, 45, 45);
+            lblErrores.Visible = true;
+        }
         private void LimpiarBusqueda()
         {
             txtBuscar.Clear();
@@ -295,6 +350,10 @@ namespace VeloxSoft.Formularios
             _usuarioSeleccionado = null;
             lstSugerencias2.Visible = false;
             cbMetodoPago.SelectedIndex = 0;
+            txtUsuario.ReadOnly = false;
+            txtUsuario.BackColor = Color.FromArgb(250, 254, 247);
+            lblInfoNombre.Visible = false;
+            lblInfoId.Visible = false;
         }
 
         // ── DISEÑO ───────────────────────────────────────────────
