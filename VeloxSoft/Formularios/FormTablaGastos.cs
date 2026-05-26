@@ -21,11 +21,11 @@ namespace VeloxSoft.Formularios
 
         public void CargarDatos(string fechaInicio, string fechaFin,string proveedor)
         {
-            MessageBox.Show("CargarDatos ejecutado"); // ← agrega esto
+            
             var lista = _ServicioGasto.Buscar_DetalleGastos(fechaInicio, fechaFin, proveedor, out string error);
 
 
-            MessageBox.Show($"Error: '{error}'\nRegistros: {lista.Count}\nFecha inicio: {fechaInicio}\nFecha fin: {fechaFin}");
+           
 
             if (!string.IsNullOrEmpty(error)) { MessageBox.Show(error); return; }
 
