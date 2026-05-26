@@ -16,6 +16,7 @@ namespace VeloxSoft
         private readonly ServicioUsuarios _ServicioUsuarios;
         private readonly ServicioClientes _ServicioClientes;
         private readonly ServicioVentas _ServicioVentas;
+        private readonly ServicioCorte _ServicioCorte;
         private readonly ServicioGasto _ServicioGasto;
         // Fields
         private IconButton currentBtn;
@@ -25,13 +26,14 @@ namespace VeloxSoft
 
 
         // Constructor
-        public FormMainMenu(ServicioInventario ServicioInventario, ServicioUsuarios ServicioUsuarios, ServicioClientes ServicioClientes, ServicioVentas ServicioVentas,ServicioGasto ServicioGasto)
+        public FormMainMenu(ServicioInventario ServicioInventario, ServicioUsuarios ServicioUsuarios, ServicioClientes ServicioClientes, ServicioVentas ServicioVentas, ServicioCorte ServicioCorte, ServicioGasto ServicioGasto)
         {
             //Instancias de servicios
             _ServicioInventario = ServicioInventario;
             _ServicioUsuarios = ServicioUsuarios;
             _ServicioClientes = ServicioClientes;
             _ServicioVentas = ServicioVentas;
+            _ServicioCorte = ServicioCorte;
             _ServicioGasto = ServicioGasto;
             //Fin de Instancias de servicios
             InitializeComponent();
@@ -171,7 +173,7 @@ namespace VeloxSoft
 
         private void btnCorte_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new FormCorte());
+            OpenChildForm(new FormCorte(_ServicioCorte));
             ActivateButton(sender, RGBColors.color6);
         }
 
