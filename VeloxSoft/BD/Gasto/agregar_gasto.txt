@@ -1,0 +1,10 @@
+-- Función para insertar nombre de gasto
+CREATE OR REPLACE FUNCTION agregar_gasto(
+    p_descripcion VARCHAR(255)
+)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO tbl_gasto (descripcion)
+    VALUES (p_descripcion);
+END;
+$$ LANGUAGE plpgsql;
