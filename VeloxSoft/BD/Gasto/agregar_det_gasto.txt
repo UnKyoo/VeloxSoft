@@ -1,0 +1,11 @@
+-- Función para insertar detalle de gasto
+CREATE OR REPLACE FUNCTION agregar_det_gasto(
+    p_monto     NUMERIC(10,4),
+    p_id_gasto  BIGINT
+)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO tbl_det_gasto (monto, fecha, id_gasto)
+    VALUES (p_monto, NOW(), p_id_gasto);
+END;
+$$ LANGUAGE plpgsql;

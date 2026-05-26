@@ -35,6 +35,7 @@
             lblProveedor = new Label();
             lblTituloForm = new Label();
             pnlBotones = new Panel();
+            btnBuscarU = new FontAwesome.Sharp.IconButton();
             dtHasta = new DateTimePicker();
             dtDesde = new DateTimePicker();
             lblHasta = new Label();
@@ -107,7 +108,6 @@
             btnEliminar.TabIndex = 10;
             btnEliminar.Text = "Eliminar";
             btnEliminar.UseVisualStyleBackColor = false;
-            btnEliminar.Click += btnEliminar_Click;
             btnEliminar.Paint += btnEliminar_Paint;
             // 
             // btnLimpiar
@@ -166,6 +166,7 @@
             txtMonto.Font = new Font("Century Gothic", 12F);
             txtMonto.Location = new Point(46, 277);
             txtMonto.Margin = new Padding(3, 4, 3, 4);
+            txtMonto.MaxLength = 10;
             txtMonto.Name = "txtMonto";
             txtMonto.Size = new Size(447, 32);
             txtMonto.TabIndex = 5;
@@ -220,6 +221,7 @@
             // pnlBotones
             // 
             pnlBotones.BackColor = Color.White;
+            pnlBotones.Controls.Add(btnBuscarU);
             pnlBotones.Controls.Add(dtHasta);
             pnlBotones.Controls.Add(dtDesde);
             pnlBotones.Controls.Add(lblHasta);
@@ -235,6 +237,23 @@
             pnlBotones.TabIndex = 1;
             pnlBotones.Paint += pnlBotones_Paint;
             pnlBotones.Resize += pnlBotones_Resize;
+            // 
+            // btnBuscarU
+            // 
+            btnBuscarU.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            btnBuscarU.BackColor = Color.FromArgb(59, 109, 17);
+            btnBuscarU.FlatAppearance.BorderSize = 0;
+            btnBuscarU.FlatStyle = FlatStyle.Flat;
+            btnBuscarU.IconChar = FontAwesome.Sharp.IconChar.Search;
+            btnBuscarU.IconColor = Color.Black;
+            btnBuscarU.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            btnBuscarU.IconSize = 25;
+            btnBuscarU.Location = new Point(691, 73);
+            btnBuscarU.Name = "btnBuscarU";
+            btnBuscarU.Size = new Size(37, 34);
+            btnBuscarU.TabIndex = 42;
+            btnBuscarU.UseVisualStyleBackColor = false;
+            btnBuscarU.Click += btnBuscarU_Click;
             // 
             // dtHasta
             // 
@@ -281,7 +300,7 @@
             cbProveedorFiltro.DropDownStyle = ComboBoxStyle.DropDownList;
             cbProveedorFiltro.Font = new Font("Century Gothic", 11F);
             cbProveedorFiltro.FormattingEnabled = true;
-            cbProveedorFiltro.Location = new Point(440, 16);
+            cbProveedorFiltro.Location = new Point(471, 16);
             cbProveedorFiltro.Margin = new Padding(3, 4, 3, 4);
             cbProveedorFiltro.Name = "cbProveedorFiltro";
             cbProveedorFiltro.Size = new Size(228, 29);
@@ -292,7 +311,7 @@
             lblProveedorFiltro.AutoSize = true;
             lblProveedorFiltro.Font = new Font("Century Gothic", 12F);
             lblProveedorFiltro.ForeColor = Color.FromArgb(59, 109, 17);
-            lblProveedorFiltro.Location = new Point(320, 20);
+            lblProveedorFiltro.Location = new Point(346, 20);
             lblProveedorFiltro.Name = "lblProveedorFiltro";
             lblProveedorFiltro.Size = new Size(113, 23);
             lblProveedorFiltro.TabIndex = 2;
@@ -381,5 +400,6 @@
 
         private DateTimePicker dtDesde;
         private DateTimePicker dtHasta;
+        private FontAwesome.Sharp.IconButton btnBuscarU;
     }
 }
