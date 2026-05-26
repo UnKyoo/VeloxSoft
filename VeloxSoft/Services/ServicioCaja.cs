@@ -67,7 +67,7 @@ namespace VeloxSoft.Services
             }
         }
 
-        public List<Usuario> BuscarUsuarios(string filtro, out string errorMessage)
+        public List<Cliente> BuscarUsuarios(string filtro, out string errorMessage)
         {
             errorMessage = null;
             try
@@ -76,30 +76,24 @@ namespace VeloxSoft.Services
                 conn.Open();
 
                 using var cmd = new NpgsqlCommand(@"
-                SELECT id, nombre, tipo
-                FROM tbl_usuario
-                WHERE secion = true
-                  AND estado = true
-                  AND (
-                      nombre ILIKE @filtro
-                      OR CAST(id AS TEXT) ILIKE @filtro
-                  )
+                SELECT id_cel, nombre
+                FROM tbl_cliente
+                WHERE nombre ILIKE @filtro
+                      OR CAST(id_cel AS TEXT) ILIKE @filtro
                 ORDER BY nombre
-                LIMIT 10
-                ", conn);
+                LIMIT 10", conn);
 
                 cmd.Parameters.AddWithValue("filtro", $"%{filtro}%");
 
                 using var reader = cmd.ExecuteReader();
-                var lista = new List<Usuario>();
+                var lista = new List<Cliente>();
 
                 while (reader.Read())
                 {
-                    lista.Add(new Usuario
+                    lista.Add(new Cliente
                     {
-                        Id = reader.GetInt64(0),
+                        IdCliente = reader.GetInt64(0),
                         Nombre = reader.GetString(1),
-                        Rol = reader.GetString(2)
                     });
                 }
 
@@ -108,12 +102,12 @@ namespace VeloxSoft.Services
             catch (PostgresException)
             {
                 errorMessage = "Error inesperado PG.";
-                return new List<Usuario>();
+                return new List<Cliente>();
             }
             catch (Exception)
             {
                 errorMessage = "Error inesperado G.";
-                return new List<Usuario>();
+                return new List<Cliente>();
             }
         }
 

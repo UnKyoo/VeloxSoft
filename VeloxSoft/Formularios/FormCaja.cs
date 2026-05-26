@@ -13,7 +13,7 @@ namespace VeloxSoft.Formularios
     {
         private List<ProductoCarrito> _carrito = new List<ProductoCarrito>();
         private Producto? _productoSeleccionado;
-        private Usuario? _usuarioSeleccionado;
+        private Cliente? _clienteSeleccionado;
         private readonly ServicioCaja _ServicioCaja;
 
         // Datos de prueba productos
@@ -99,9 +99,7 @@ namespace VeloxSoft.Formularios
             lblUnidad.Text = _productoSeleccionado.IdCategoria;
             lstSugerencias.Visible = false;
         }
-
-        // ── BÚSQUEDA USUARIO ─────────────────────────────────────
-
+        // ── BÚSQUEDA CLIENTE ─────────────────────────────────────
         private void txtUsuario_TextChanged(object sender, EventArgs e)
         {
             if (!checkCaja.Checked) return;
@@ -111,20 +109,24 @@ namespace VeloxSoft.Formularios
             if (string.IsNullOrEmpty(texto))
             {
                 lstSugerencias2.Visible = false;
-                _usuarioSeleccionado = null;
+                _clienteSeleccionado = null; // Actualizado
                 return;
             }
 
+            // Llama a tu método (que devuelve List<Cliente>)
             var resultados = _ServicioCaja.BuscarUsuarios(texto, out string _);
+
+            // DIAGNÓSTICO 3: ¿Cuántos registros llegaron al formulario?
+            System.Diagnostics.Debug.WriteLine($"[FORM CAJA] El servicio devolvió {resultados?.Count ?? 0} clientes para el filtro '{texto}'.");
 
             lstSugerencias2.Items.Clear();
 
             if (resultados.Count > 0)
             {
-                foreach (var u in resultados)
-                    lstSugerencias2.Items.Add(u); // usa ToString() del modelo
+                foreach (var c in resultados)
+                    lstSugerencias2.Items.Add(c); // Usa el ToString() que agregamos en Cliente
 
-                lstSugerencias2.Tag = resultados;
+                lstSugerencias2.Tag = resultados; // Guarda la lista de Clientes
                 lstSugerencias2.Visible = true;
             }
             else
@@ -137,21 +139,24 @@ namespace VeloxSoft.Formularios
         {
             if (lstSugerencias2.SelectedIndex < 0) return;
 
-            var lista = lstSugerencias2.Tag as List<Usuario>;
+            // Ajustado el casteo a List<Cliente>
+            var lista = lstSugerencias2.Tag as List<Cliente>;
             if (lista == null) return;
 
-            _usuarioSeleccionado = lista[lstSugerencias2.SelectedIndex];
-            txtUsuario.Text = $"{_usuarioSeleccionado.Nombre} ({_usuarioSeleccionado.Id})";
+            _clienteSeleccionado = lista[lstSugerencias2.SelectedIndex];
+
+            // Ajustado a las propiedades de Cliente: Nombre e IdCliente
+            txtUsuario.Text = $"{_clienteSeleccionado.Nombre} ({_clienteSeleccionado.IdCliente})";
             lstSugerencias2.Visible = false;
 
             // Bloquear campo
             txtUsuario.ReadOnly = true;
             txtUsuario.BackColor = Color.FromArgb(220, 220, 220);
 
-            // Mostrar info en el recuadro si tienes pnlInfoUsuario
-            lblInfoNombre.Text = _usuarioSeleccionado.Nombre;
+            // Mostrar info en los lbl usando IdCliente
+            lblInfoNombre.Text = _clienteSeleccionado.Nombre;
             lblInfoNombre.Visible = true;
-            lblInfoId.Text = $"Tel: {_usuarioSeleccionado.Id}";
+            lblInfoId.Text = $"ID: {_clienteSeleccionado.IdCliente}";
             lblInfoId.Visible = true;
         }
 
@@ -164,13 +169,12 @@ namespace VeloxSoft.Formularios
                 txtUsuario.ReadOnly = false;
                 txtUsuario.BackColor = Color.FromArgb(250, 254, 247);
                 txtUsuario.Clear();
-                _usuarioSeleccionado = null;
+                _clienteSeleccionado = null; // Actualizado
                 lblInfoNombre.Text = "";
                 lblInfoId.Text = "";
                 e.Handled = true;
             }
         }
-
         private void CargarMetodosPago()
         {
             var lista = _ServicioCaja.Ver_MetodosPago(out string _);//out strin _ para ignorar mensaje
@@ -274,7 +278,7 @@ namespace VeloxSoft.Formularios
                 return;
             }
 
-            string usuario = _usuarioSeleccionado?.Nombre ?? "Sin usuario";
+            string usuario = _clienteSeleccionado?.Nombre ?? "Sin usuario";
             string metodo = cbMetodoPago.SelectedItem?.ToString() ?? "Efectivo";
             decimal total = _carrito.Sum(c => c.Subtotal);
 
@@ -347,7 +351,7 @@ namespace VeloxSoft.Formularios
             RenderizarCarrito();
             LimpiarBusqueda();
             txtUsuario.Clear();
-            _usuarioSeleccionado = null;
+            _clienteSeleccionado = null;
             lstSugerencias2.Visible = false;
             cbMetodoPago.SelectedIndex = 0;
             txtUsuario.ReadOnly = false;
@@ -436,7 +440,7 @@ namespace VeloxSoft.Formularios
 
             if (!mostrar)
             {
-                _usuarioSeleccionado = null;
+                _clienteSeleccionado = null;
                 txtUsuario.Clear();
             }
         }

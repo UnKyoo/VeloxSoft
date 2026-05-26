@@ -12,5 +12,7 @@ namespace VeloxSoft.Models
         public string Apodo { get; set; }
         public string Direccion { get; set; } // Texto concatenado desde la BD
         public int IdDireccion { get; set; }
+        public override string ToString()
+            => $"{Nombre} ({IdCliente})";
     }
 }

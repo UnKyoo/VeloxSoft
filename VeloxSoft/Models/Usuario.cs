@@ -8,7 +8,6 @@
         public string Rol { get; set; }
         public bool Secion { get; set; }
         public bool Estado { get; set; }
-        public override string ToString()
-            => $"{Nombre}  ({Id})";
+  
     }
 }
