@@ -1,0 +1,81 @@
+CREATE OR REPLACE FUNCTION realizar_corte()
+RETURNS TEXT AS $$
+DECLARE
+    v_id_corte      BIGINT;
+    v_total_ventas  NUMERIC(10,4);
+    v_total_gasto   NUMERIC(10,4);
+    v_ganancia      NUMERIC(10,4);
+    v_fecha         DATE;
+    v_cortes_hechos INT := 0;
+BEGIN
+    -- Iterar por cada fecha distinta con pendientes (ventas o gastos sin id_corte)
+    FOR v_fecha IN
+        SELECT DISTINCT fecha
+        FROM (
+            SELECT fecha FROM tbl_venta     WHERE id_corte IS NULL
+            UNION
+            SELECT fecha FROM tbl_det_gasto WHERE id_corte IS NULL
+        ) fechas_pendientes
+        ORDER BY fecha ASC  -- del más antiguo al más reciente
+    LOOP
+        -- 1. Sumar ventas sin id_corte de esta fecha
+        SELECT COALESCE(SUM(importe_g), 0)
+        INTO v_total_ventas
+        FROM tbl_venta
+        WHERE id_corte IS NULL AND fecha = v_fecha;
+
+        -- 2. Sumar gastos sin id_corte de esta fecha
+        SELECT COALESCE(SUM(monto), 0)
+        INTO v_total_gasto
+        FROM tbl_det_gasto
+        WHERE id_corte IS NULL AND fecha = v_fecha;
+
+        -- 3. Calcular ganancia
+        v_ganancia := v_total_ventas - v_total_gasto;
+
+        -- 4. Ver si ya existe corte de esta fecha
+        SELECT id_corte INTO v_id_corte
+        FROM tbl_corte
+        WHERE fecha = v_fecha
+        LIMIT 1;
+
+        IF v_id_corte IS NOT NULL THEN
+            -- 5a. Actualizar corte existente de esta fecha
+            UPDATE tbl_corte
+            SET
+                total_ventas = total_ventas + v_total_ventas,
+                total_gasto  = total_gasto  + v_total_gasto,
+                ganancia     = ganancia     + v_ganancia
+            WHERE id_corte = v_id_corte;
+        ELSE
+            -- 5b. Crear nuevo corte para esta fecha
+            INSERT INTO tbl_corte (fecha, total_ventas, total_gasto, ganancia)
+            VALUES (v_fecha, v_total_ventas, v_total_gasto, v_ganancia)
+            RETURNING id_corte INTO v_id_corte;
+        END IF;
+
+        -- 6. Asignar id_corte a ventas de esta fecha sin corte
+        UPDATE tbl_venta
+        SET id_corte = v_id_corte
+        WHERE id_corte IS NULL AND fecha = v_fecha;
+
+        -- 7. Asignar id_corte a gastos de esta fecha sin corte
+        UPDATE tbl_det_gasto
+        SET id_corte = v_id_corte
+        WHERE id_corte IS NULL AND fecha = v_fecha;
+
+        v_cortes_hechos := v_cortes_hechos + 1;
+    END LOOP;
+
+    -- 8. Si no había nada pendiente
+    IF v_cortes_hechos = 0 THEN
+        RETURN 'ERROR|No hay ventas ni gastos pendientes de corte';
+    END IF;
+
+    RETURN 'OK|Se realizaron ' || v_cortes_hechos || ' corte(s) correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 'ERROR|' || SQLERRM;
+END;
+$$ LANGUAGE plpgsql;
