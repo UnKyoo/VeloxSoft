@@ -92,7 +92,7 @@ namespace VeloxSoft.Services
             try
             {
                 using var conn = new NpgsqlConnection(_dbConfig.GetConnection(Program.RolActual));
-                MessageBox.Show($"Rol actual: {Program.RolActual}\nConexión: {_dbConfig.GetConnection(Program.RolActual)}");
+              
                 conn.Open();
 
                 string query = @"SELECT d.id_gasto_d, d.monto, d.fecha, d.id_gasto, d.id_corte, g.descripcion
@@ -110,9 +110,7 @@ namespace VeloxSoft.Services
                 if (proveedor != "Todos")
                     cmd.Parameters.AddWithValue("proveedor", proveedor);
 
-                // ← debug
-                MessageBox.Show($"Query: {query}\nFechaInicio: {DateOnly.Parse(fechaInicio)}\nFechaFin: {DateOnly.Parse(fechaFin)}\nConexión: {conn.State}");
-
+                
                 using var reader = cmd.ExecuteReader();
                 var lista = new List<DetalleGasto>();
 
